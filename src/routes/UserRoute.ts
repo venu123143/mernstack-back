@@ -1,0 +1,45 @@
+import express from "express"
+import {
+    createUser, loginUser, getAllUsers,
+    getUser, deleteUser, updateUser,
+    blockUser, unblockUser, handleRefreshToken,
+    logout, updatePassword, forgotPasswordToken,
+    resetpassword, loginAdmin, GetWishlist,
+    saveAddress, getUserCart,
+    emptyCart, applyCoupon, createOrder, getOrders, updateCartItems, deleteCartItems, updateOrderStatus
+} from '../controller/userController.js'
+
+import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js'
+const router = express.Router();
+
+
+router.post('/register', createUser)
+router.post('/forgot-password-token', forgotPasswordToken)
+router.put('/resetpassword/:token', resetpassword)
+router.put('/password', authMiddleware, updatePassword)
+router.post('/login', loginUser)
+router.post('/admin-login', loginAdmin)
+router.get('/allusers', getAllUsers)
+router.get('/refresh', handleRefreshToken)
+router.get('/logout', logout)
+
+// router.post('/cart', authMiddleware, addToCart)
+router.post('/cart', authMiddleware, updateCartItems)
+router.delete('/cart', authMiddleware, deleteCartItems)
+router.post('/cart/applycoupon', authMiddleware, applyCoupon)
+router.post('/cart/cash-order', authMiddleware, createOrder)
+router.get('/wishlist', authMiddleware, GetWishlist)
+router.get('/cart', authMiddleware, getUserCart)
+router.get('/orders', authMiddleware, getOrders)
+router.put('/updateorder/:id', authMiddleware, isAdmin, updateOrderStatus)
+
+router.delete('/empty-cart', authMiddleware, emptyCart)
+router.put('/update-user', authMiddleware, updateUser)
+router.put('/save-address', authMiddleware, saveAddress)
+router.delete('/:id', authMiddleware, deleteUser)
+router.get('/:id', authMiddleware, isAdmin, getUser)
+router.put('/block-user/:id', authMiddleware, isAdmin, blockUser)
+router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser)
+
+
+export default router

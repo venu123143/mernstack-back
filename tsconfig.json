@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "NodeNext",
+    "baseUrl": "./src",
+    "outDir": "./dist",
+    "removeComments": true,
+    // "sourceMap": true,
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
+}

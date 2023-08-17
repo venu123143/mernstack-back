@@ -1,0 +1,1 @@
+{"version":3,"file":"FancyError.js","sourceRoot":"","sources":["../../src/utils/FancyError.ts"],"names":[],"mappings":"AAEC,MAAM,UAAW,SAAQ,KAAK;IAE3B,YAAY,OAAe,EAAE,UAAkB;QAC3C,KAAK,CAAC,OAAO,CAAC,CAAC;QACf,IAAI,CAAC,OAAO,GAAG,OAAO;YACtB,IAAI,CAAC,UAAU,GAAG,UAAU,CAAA;IAChC,CAAC;CACJ;AAED,eAAe,UAAU,CAAA"}
