@@ -16,7 +16,9 @@ import BlogRouter from "./routes/BlogRoutes.js";
 import Category from "./routes/ProdCategoryRoutes.js";
 import BlogCategory from "./routes/BlogCatRoute.js";
 import BrandRouter from "./routes/BrandRoute.js";
+import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
+import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
     origin: ['http://localhost:3000'],
     credentials: true,
@@ -37,6 +39,8 @@ app.use("/api/category", Category);
 app.use("/api/blogcategory", BlogCategory);
 app.use("/api/brand", BrandRouter);
 app.use("/api/coupon", CouponRouter);
+app.use("/api/color", ColorRouter);
+app.use("/api/enq", EnquiryRouter);
 app.use(ErrorHandler);
 const port = process.env.PORT || 5000;
 const server = app.listen(port, () => {

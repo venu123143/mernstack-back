@@ -13,7 +13,7 @@ import fs from 'fs';
 import Product from "../models/ProductModel.js";
 import FancyError from "../utils/FancyError.js";
 import User from "../models/UserModel.js";
-import uploadImage from "../utils/Cloudinary.js";
+import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
 export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.body.title) {
@@ -23,6 +23,7 @@ export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
         res.json(product);
     }
     catch (error) {
+        console.log(error);
         throw new FancyError(" can't be able to create product, enter all required fields..!", 400);
     }
 }));
@@ -32,7 +33,7 @@ export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title);
         }
-        const updateProd = yield Product.findOneAndUpdate({ _id: id }, req.body, { new: true });
+        const updateProd = yield Product.findOneAndUpdate({ _id: id }, req.body, { new: true }).populate(['category', 'brand', 'color']);
         res.json(updateProd);
     }
     catch (error) {
@@ -57,7 +58,7 @@ export const deleteProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
 export const getProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const findProduct = yield Product.findById({ _id: id });
+        const findProduct = yield Product.findById({ _id: id }).populate(['category', 'brand', 'color']);
         if (findProduct !== null) {
             res.json(findProduct);
         }
@@ -102,7 +103,7 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
                 return res.status(404).json({ message: "this page doesnot exist", statusCode: 404 });
             }
         }
-        const products = yield query;
+        const products = yield query.populate(['category', 'brand', 'color']);
         return res.json(products);
     }
     catch (error) {
@@ -180,5 +181,15 @@ export const uploadImages = asyncHandler((req, res) => __awaiter(void 0, void 0,
     }
     catch (error) {
         throw new FancyError("cannot upload images", 400);
+    }
+}));
+export const deleteImages = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { path } = req.params;
+    try {
+        const deleted = deleteImage(path);
+        res.json({ message: "deleted sucessfully", });
+    }
+    catch (error) {
+        throw new FancyError("cannot delete images", 400);
     }
 }));

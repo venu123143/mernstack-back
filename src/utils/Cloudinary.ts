@@ -8,11 +8,14 @@ cloudinary.config({
 });
 
 
-const uploadImage = async (filePath: string) => {
+export const uploadImage = async (filePath: string) => {
     const upload = await cloudinary.uploader.upload(filePath) as UploadApiResponse
-    return { url: upload.secure_url }
+    return { url: upload.secure_url, asset_id: upload.asset_id, public_id: upload.public_id }
+};
+export const deleteImage = async (filePath: string) => {
+    const deleted = await cloudinary.uploader.destroy(filePath)
+    return { url: deleted.secure_url, asset_id: deleted.asset_id, public_id: deleted.public_id }
 };
 
-export default uploadImage
 
 

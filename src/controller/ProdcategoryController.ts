@@ -8,7 +8,7 @@ export const createCategory = asyncHandler(async (req, res) => {
         throw new FancyError("title field is mandetory to create the category", 400)
     }
     try {
-        const newCategory = await Category.create(req.body)
+        const newCategory = await (await Category.create(req.body))
         res.json(newCategory)
     } catch (error) {
         throw new FancyError("cannot be able to create Category", 401)

@@ -4,7 +4,7 @@ import Blog from "../models/BlogModel.js"
 import { IUser } from "../models/UserModel.js"
 import asyncHandler from "express-async-handler"
 import FancyError from "../utils/FancyError.js"
-import uploadImage from "../utils/Cloudinary.js"
+import {uploadImage} from "../utils/Cloudinary.js"
 // import { validateMogodbId } from "../utils/validateMongodbId.js"
 
 

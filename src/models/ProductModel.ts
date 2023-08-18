@@ -8,14 +8,15 @@ export interface IProduct {
     slug: string;
     description: string;
     price: number;
-    category: string;
-    brand: string;
+    category: Types.ObjectId;
+    brand: Types.ObjectId;
+    tags: string[];
     quantity?: number;
     sold?: number;
     images?: string[];
-    color: string;
+    color: string[];
     ratings?: Rating[];
-    totalRating:number;
+    totalRating: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -23,7 +24,7 @@ export interface IProduct {
 export interface Rating {
     _id: Types.ObjectId;
     star: number;
-    comment:string;
+    comment: string;
     postedBy: mongoose.Types.ObjectId;
 }
 // Declare the Schema of the Mongo model
@@ -47,16 +48,14 @@ var productSchema = new mongoose.Schema({
         required: true,
     },
     category: {
-        // type: mongoose.Schema.Types.ObjectId,
-        // ref: "Category"
-        type: String,
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category"
     },
     brand: {
-        type: String,
-        // enum: ["Apple", "Samsung", "Lenovo"]
-        required: true,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Brand"
     },
+    tags: [],
     quantity: {
         type: Number,
         required: true
@@ -69,14 +68,13 @@ var productSchema = new mongoose.Schema({
     images: {
         type: Array,
     },
-    color: {
-        type: String,
-        // enum: ['Black', 'Brown', 'Red']
-        required: true,
-    },
+    color: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Color"
+    }],
     ratings: [{
         star: Number,
-        comment:String,
+        comment: String,
         postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     }],
     totalRating: {

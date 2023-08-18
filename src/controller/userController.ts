@@ -80,9 +80,9 @@ export const logout = asyncHandler(async (req, res) => {
     if (!cookies.loginToken) {
         throw new FancyError('no refresh token in cookies', 404)
     }
-    res.clearCookie('loginToken')
     await User.findOneAndUpdate({ refreshToken: cookies.loginToken }, { refreshToken: "" })
-    res.status(204).json({ message: 'user logged out sucessfully', sucess: true })
+    res.clearCookie(cookies.loginToken).status(204)
+        .json({ message: 'user logged out sucessfully', sucess: true })
 })
 
 export const getAllUsers = asyncHandler(async (req, res) => {
@@ -214,7 +214,30 @@ export const resetpassword = asyncHandler(async (req, res) => {
     await user.save();
     res.json(user)
 })
+export const deleteFromWishlist = asyncHandler(async (req, res) => {
+    const { _id } = req.user as IUser
+    const { prodId } = req.params
 
+    try {
+        const wish = await User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } })
+        res.json({ message: "product removed from wishlist sucessfully.", sucess: true })
+    } catch (error) {
+        throw new FancyError('cannot delete from the wishlist ', 400)
+    }
+})
+
+export const addToWishlist = asyncHandler(async (req, res) => {
+    const { _id } = req.user as IUser
+    const { prodId } = req.body
+    try {
+        const user = await User.findById(_id).select('wishlist')
+        const wishlist = user?.wishlist?.find((id) => id.toString() === prodId)
+        const wish = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
+        res.json({ message: "product added to wishlist sucessfully.", sucess: true })
+    } catch (error) {
+        throw new FancyError('cannot add to wishlist ', 400)
+    }
+})
 export const GetWishlist = asyncHandler(async (req, res, next) => {
     const { _id } = req.user as IUser
     validateMogodbId(req, res, next)
@@ -239,10 +262,7 @@ export const saveAddress = asyncHandler(async (req, res, next) => {
     }
 })
 
-export const addToCart = asyncHandler(async (req, res): Promise<any> => {
-    console.log(req);
 
-})
 export const updateCartItems = asyncHandler(async (req, res): Promise<any> => {
     const { _id } = req.user as IUser
     const { prodId, tipAmount, color } = req.body
@@ -460,7 +480,7 @@ export const getOrders = asyncHandler(async (req, res) => {
 export const updateOrderStatus = asyncHandler(async (req, res) => {
     const { Status } = req.body
     const { id } = req.params
-    
+
     let orderStatus;
     if (["process", "processing", "procesed", "processed"].includes(Status.toLowerCase())) {
         orderStatus = "Processing";

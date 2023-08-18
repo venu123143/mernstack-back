@@ -5,8 +5,10 @@ import {
     blockUser, unblockUser, handleRefreshToken,
     logout, updatePassword, forgotPasswordToken,
     resetpassword, loginAdmin, GetWishlist,
-    saveAddress, getUserCart,
-    emptyCart, applyCoupon, createOrder, getOrders, updateCartItems, deleteCartItems, updateOrderStatus
+    saveAddress, getUserCart, emptyCart,
+    applyCoupon, createOrder, getOrders,
+    updateCartItems, deleteCartItems, updateOrderStatus,
+    deleteFromWishlist, addToWishlist
 } from '../controller/userController.js'
 
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js'
@@ -22,6 +24,7 @@ router.post('/admin-login', loginAdmin)
 router.get('/allusers', getAllUsers)
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
+router.post('/wishlist',authMiddleware, addToWishlist)
 
 // router.post('/cart', authMiddleware, addToCart)
 router.post('/cart', authMiddleware, updateCartItems)
@@ -37,6 +40,7 @@ router.delete('/empty-cart', authMiddleware, emptyCart)
 router.put('/update-user', authMiddleware, updateUser)
 router.put('/save-address', authMiddleware, saveAddress)
 router.delete('/:id', authMiddleware, deleteUser)
+router.delete('/wishlist/:id',authMiddleware, deleteFromWishlist)
 router.get('/:id', authMiddleware, isAdmin, getUser)
 router.put('/block-user/:id', authMiddleware, isAdmin, blockUser)
 router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser)

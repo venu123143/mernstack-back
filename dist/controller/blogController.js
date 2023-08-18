@@ -11,7 +11,7 @@ import fs from "fs";
 import Blog from "../models/BlogModel.js";
 import asyncHandler from "express-async-handler";
 import FancyError from "../utils/FancyError.js";
-import uploadImage from "../utils/Cloudinary.js";
+import { uploadImage } from "../utils/Cloudinary.js";
 export const createBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const newBlog = yield Blog.create(req.body);

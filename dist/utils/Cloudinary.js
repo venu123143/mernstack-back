@@ -13,8 +13,11 @@ cloudinary.config({
     api_key: process.env.API_KEY,
     api_secret: process.env.API_SECRET
 });
-const uploadImage = (filePath) => __awaiter(void 0, void 0, void 0, function* () {
+export const uploadImage = (filePath) => __awaiter(void 0, void 0, void 0, function* () {
     const upload = yield cloudinary.uploader.upload(filePath);
-    return { url: upload.secure_url };
+    return { url: upload.secure_url, asset_id: upload.asset_id, public_id: upload.public_id };
 });
-export default uploadImage;
+export const deleteImage = (filePath) => __awaiter(void 0, void 0, void 0, function* () {
+    const deleted = yield cloudinary.uploader.destroy(filePath);
+    return { url: deleted.secure_url, asset_id: deleted.asset_id, public_id: deleted.public_id };
+});

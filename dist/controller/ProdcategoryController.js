@@ -16,7 +16,7 @@ export const createCategory = asyncHandler((req, res) => __awaiter(void 0, void 
         throw new FancyError("title field is mandetory to create the category", 400);
     }
     try {
-        const newCategory = yield Category.create(req.body);
+        const newCategory = yield (yield Category.create(req.body));
         res.json(newCategory);
     }
     catch (error) {

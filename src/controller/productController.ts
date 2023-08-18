@@ -5,7 +5,7 @@ import fs from 'fs'
 import Product, { IProduct } from "../models/ProductModel.js"
 import FancyError from "../utils/FancyError.js"
 import User, { IUser } from "../models/UserModel.js"
-import uploadImage from "../utils/Cloudinary.js"
+import { uploadImage, deleteImage } from "../utils/Cloudinary.js"
 
 
 export const createProduct = asyncHandler(async (req, res) => {
@@ -16,6 +16,8 @@ export const createProduct = asyncHandler(async (req, res) => {
         const product = await Product.create(req.body)
         res.json(product)
     } catch (error) {
+        console.log(error);
+
         throw new FancyError(" can't be able to create product, enter all required fields..!", 400)
     }
 })
@@ -25,7 +27,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title)
         }
-        const updateProd = await Product.findOneAndUpdate({ _id: id }, req.body, { new: true })
+        const updateProd = await Product.findOneAndUpdate({ _id: id }, req.body, { new: true }).populate(['category', 'brand', 'color'])
         res.json(updateProd)
     } catch (error) {
         throw new FancyError(" can't be able to update product, Try Again..!", 400)
@@ -47,7 +49,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
 export const getProduct = asyncHandler(async (req, res) => {
     const { id } = req.params
     try {
-        const findProduct = await Product.findById({ _id: id })
+        const findProduct = await Product.findById({ _id: id }).populate(['category', 'brand', 'color'])
 
         if (findProduct !== null) {
             res.json(findProduct)
@@ -100,7 +102,7 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
                 return res.status(404).json({ message: "this page doesnot exist", statusCode: 404 })
             }
         }
-        const products = await query
+        const products = await query.populate(['category', 'brand', 'color'])
         return res.json(products)
     } catch (error) {
         throw new FancyError("cannot be able to fetch products", 400)
@@ -184,6 +186,16 @@ export const uploadImages = asyncHandler(async (req, res) => {
         res.json(findProduct)
     } catch (error) {
         throw new FancyError("cannot upload images", 400)
+    }
+
+})
+export const deleteImages = asyncHandler(async (req, res) => {
+    const { path } = req.params
+    try {
+        const deleted = deleteImage(path);
+        res.json({ message: "deleted sucessfully", })
+    } catch (error) {
+        throw new FancyError("cannot delete images", 400)
 
     }
 

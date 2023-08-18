@@ -75,9 +75,9 @@ export const logout = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
     if (!cookies.loginToken) {
         throw new FancyError('no refresh token in cookies', 404);
     }
-    res.clearCookie('loginToken');
     yield User.findOneAndUpdate({ refreshToken: cookies.loginToken }, { refreshToken: "" });
-    res.status(204).json({ message: 'user logged out sucessfully', sucess: true });
+    res.clearCookie(cookies.loginToken).status(204)
+        .json({ message: 'user logged out sucessfully', sucess: true });
 }));
 export const getAllUsers = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -195,6 +195,31 @@ export const resetpassword = asyncHandler((req, res) => __awaiter(void 0, void 0
     yield user.save();
     res.json(user);
 }));
+export const deleteFromWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { _id } = req.user;
+    const { prodId } = req.params;
+    try {
+        const wish = yield User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } });
+        res.json({ message: "product removed from wishlist sucessfully.", sucess: true });
+    }
+    catch (error) {
+        throw new FancyError('cannot delete from the wishlist ', 400);
+    }
+}));
+export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { _id } = req.user;
+    const { prodId } = req.body;
+    try {
+        const user = yield User.findById(_id).select('wishlist');
+        const wishlist = (_a = user === null || user === void 0 ? void 0 : user.wishlist) === null || _a === void 0 ? void 0 : _a.find((id) => id.toString() === prodId);
+        const wish = yield User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true });
+        res.json({ message: "product added to wishlist sucessfully.", sucess: true });
+    }
+    catch (error) {
+        throw new FancyError('cannot add to wishlist ', 400);
+    }
+}));
 export const GetWishlist = asyncHandler((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     validateMogodbId(req, res, next);
@@ -208,18 +233,15 @@ export const GetWishlist = asyncHandler((req, res, next) => __awaiter(void 0, vo
     }
 }));
 export const saveAddress = asyncHandler((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     const { _id } = req.user;
     validateMogodbId(req, res, next);
     try {
-        const address = User.findByIdAndUpdate(_id, { address: (_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.address }, { new: true });
+        const address = User.findByIdAndUpdate(_id, { address: (_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.address }, { new: true });
     }
     catch (error) {
         throw new FancyError('not able to update address', 400);
     }
-}));
-export const addToCart = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(req);
 }));
 export const updateCartItems = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
