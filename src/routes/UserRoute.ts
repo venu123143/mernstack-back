@@ -12,19 +12,20 @@ import {
 } from '../controller/userController.js'
 
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js'
+import { loginValidator, passwordValidator, registerValidator } from "../middleware/ValidateMiddleware.js";
 const router = express.Router();
 
 
-router.post('/register', createUser)
-router.post('/forgot-password-token', forgotPasswordToken)
-router.put('/resetpassword/:token', resetpassword)
-router.put('/password', authMiddleware, updatePassword)
-router.post('/login', loginUser)
-router.post('/admin-login', loginAdmin)
+router.post('/register', registerValidator, createUser)
+router.post('/login', loginValidator, loginUser)
+router.post('/forgot-password-token', loginValidator, forgotPasswordToken)
+router.put('/resetpassword/:token', passwordValidator, resetpassword)
+router.put('/password', passwordValidator, authMiddleware, updatePassword)
+router.post('/admin-login', loginValidator, loginAdmin)
 router.get('/allusers', getAllUsers)
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
-router.post('/wishlist',authMiddleware, addToWishlist)
+router.post('/wishlist', authMiddleware, addToWishlist)
 
 // router.post('/cart', authMiddleware, addToCart)
 router.post('/cart', authMiddleware, updateCartItems)
@@ -40,7 +41,7 @@ router.delete('/empty-cart', authMiddleware, emptyCart)
 router.put('/update-user', authMiddleware, updateUser)
 router.put('/save-address', authMiddleware, saveAddress)
 router.delete('/:id', authMiddleware, deleteUser)
-router.delete('/wishlist/:id',authMiddleware, deleteFromWishlist)
+router.delete('/wishlist/:id', authMiddleware, deleteFromWishlist)
 router.get('/:id', authMiddleware, isAdmin, getUser)
 router.put('/block-user/:id', authMiddleware, isAdmin, blockUser)
 router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser)

@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import asyncHandler from "express-async-handler";
 import crypto from "crypto";
+import { validationResult } from "express-validator";
+import uniqueId from "uniqid";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
 import Cart from "../models/CartModel.js";
@@ -18,11 +20,14 @@ import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js';
 import NodeMailer from "../utils/NodeMailer.js";
-import uniqueId from "uniqid";
 export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { firstname, lastname, email, password, mobile } = req.body;
     if (!firstname || !lastname || !email || !password || !mobile) {
         throw new FancyError('All fields are important..!', 403);
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json(errors);
     }
     const findUser = yield User.findOne({ email });
     if (!findUser) {
@@ -36,6 +41,10 @@ export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, v
 export const loginUser = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const findUser = yield User.findOne({ email });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json(errors);
+    }
     if (findUser && findUser.role !== 'user')
         throw new FancyError("you are not an user..!", 400);
     if (findUser && (yield findUser.isPasswordMatched(password))) {
