@@ -20,7 +20,7 @@ import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
 import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,

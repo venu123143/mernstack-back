@@ -35,7 +35,7 @@ export const createUser = asyncHandler(async (req, res): Promise<any> => {
 })
 
 // User login
-export const loginUser = asyncHandler(async (req, res):Promise<any> => {
+export const loginUser = asyncHandler(async (req, res): Promise<any> => {
     const { email, password } = req.body;
     // check user exists or not
     const findUser = await User.findOne({ email });
@@ -273,6 +273,7 @@ export const saveAddress = asyncHandler(async (req, res, next) => {
 export const updateCartItems = asyncHandler(async (req, res): Promise<any> => {
     const { _id } = req.user as IUser
     const { prodId, tipAmount, color } = req.body
+
     try {
         const product = await Product.findById(prodId) as IProduct
         if (!product) {
@@ -282,7 +283,7 @@ export const updateCartItems = asyncHandler(async (req, res): Promise<any> => {
         const cart = await Cart.findOne({ orderBy: _id });
         const basicAmount = 199
         let deliveryCharge = product?.price * 1 < basicAmount ? 30 : 0
-        let tip = tipAmount
+        let tip = tipAmount ? tipAmount : 0
         const handlingCharge = 2
         let cartTotal = deliveryCharge + tip + handlingCharge + product.price * 1
         let total = product.price
@@ -345,6 +346,7 @@ export const updateCartItems = asyncHandler(async (req, res): Promise<any> => {
 export const deleteCartItems = asyncHandler(async (req, res): Promise<any> => {
     const { _id } = req.user as IUser
     const { prodId } = req.body
+    console.log(prodId, _id);
     try {
         const product = await Product.findById(prodId)
         if (!product) {
@@ -371,7 +373,7 @@ export const deleteCartItems = asyncHandler(async (req, res): Promise<any> => {
             }
             await cart.save();
             if (cart.products.length === 0) {
-                const cart = await Cart.findOneAndRemove({ orderBy: _id })
+                const cart = await Cart.findOneAndRemove({ orderBy: _id }, { new: true })
             }
             res.json({ message: "cart items decreased or item itself delted.", sucess: true })
 
@@ -386,12 +388,12 @@ export const deleteCartItems = asyncHandler(async (req, res): Promise<any> => {
 export const getUserCart = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser;
     try {
-        const cart = await Cart.findOne({ orderBy: _id }).populate("products._id")
+        const cart = await Cart.findOne({ orderBy: _id }).populate('products._id')
+        // .populate(['category', 'brand', 'color'])
         res.json({ cart })
     } catch (error) {
         console.log(error);
         throw new FancyError("cant be able to get the cart", 400)
-
     }
 })
 
@@ -401,7 +403,7 @@ export const emptyCart = asyncHandler(async (req, res) => {
 
     try {
         const user = await User.findOne({ _id })
-        const cart = await Cart.findOneAndRemove({ orderBy: user?._id })
+        const cart = await Cart.findOneAndRemove({ orderBy: user?._id }, { new: true })
 
         res.json({ cart })
     } catch (error) {

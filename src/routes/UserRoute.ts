@@ -29,12 +29,12 @@ router.post('/wishlist', authMiddleware, addToWishlist)
 
 // router.post('/cart', authMiddleware, addToCart)
 router.post('/cart', authMiddleware, updateCartItems)
-router.delete('/cart', authMiddleware, deleteCartItems)
 router.post('/cart/applycoupon', authMiddleware, applyCoupon)
 router.post('/cart/cash-order', authMiddleware, createOrder)
 router.get('/wishlist', authMiddleware, GetWishlist)
 router.get('/cart', authMiddleware, getUserCart)
 router.get('/orders', authMiddleware, getOrders)
+router.delete('/cart', authMiddleware, deleteCartItems)
 router.put('/updateorder/:id', authMiddleware, isAdmin, updateOrderStatus)
 
 router.delete('/empty-cart', authMiddleware, emptyCart)

@@ -263,7 +263,7 @@ export const updateCartItems = asyncHandler((req, res) => __awaiter(void 0, void
         const cart = yield Cart.findOne({ orderBy: _id });
         const basicAmount = 199;
         let deliveryCharge = (product === null || product === void 0 ? void 0 : product.price) * 1 < basicAmount ? 30 : 0;
-        let tip = tipAmount;
+        let tip = tipAmount ? tipAmount : 0;
         const handlingCharge = 2;
         let cartTotal = deliveryCharge + tip + handlingCharge + product.price * 1;
         let total = product.price;
@@ -323,6 +323,7 @@ export const updateCartItems = asyncHandler((req, res) => __awaiter(void 0, void
 export const deleteCartItems = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     const { prodId } = req.body;
+    console.log(prodId, _id);
     try {
         const product = yield Product.findById(prodId);
         if (!product) {
@@ -364,7 +365,7 @@ export const deleteCartItems = asyncHandler((req, res) => __awaiter(void 0, void
 export const getUserCart = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     try {
-        const cart = yield Cart.findOne({ orderBy: _id }).populate("products._id");
+        const cart = yield Cart.findOne({ orderBy: _id }).populate('products._id');
         res.json({ cart });
     }
     catch (error) {
