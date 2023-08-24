@@ -4,7 +4,7 @@ export interface ICartItem {
     _id: Schema.Types.ObjectId;
     count: number;
     color: string;
-    price: number;
+    price?: number;
 }
 
 export interface ICart extends Document {
@@ -31,11 +31,26 @@ const cartSchema: Schema = new Schema<ICart>({
             color: String
         }
     ],
-    deliveryCharge: Number,
-    tip: Number,
-    handlingCharge: Number,
-    total: Number,
-    cartTotal: Number,
+    deliveryCharge: {
+        type: Number,
+        default: 0
+    },
+    tip: {
+        type: Number,
+        default: 0
+    },
+    handlingCharge: {
+        type: Number,
+        default: 0
+    },
+    total: {
+        type: Number,
+        default: 0
+    },
+    cartTotal: {
+        type: Number,
+        default: 0
+    },
     totalAfterDiscount: Number,
     orderBy: {
         type: Schema.Types.ObjectId,

@@ -1,5 +1,5 @@
 import express from "express";
-import { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, handleRefreshToken, logout, updatePassword, forgotPasswordToken, resetpassword, loginAdmin, GetWishlist, saveAddress, getUserCart, emptyCart, applyCoupon, createOrder, getOrders, updateCartItems, deleteCartItems, updateOrderStatus, deleteFromWishlist, addToWishlist } from '../controller/userController.js';
+import { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, handleRefreshToken, logout, updatePassword, forgotPasswordToken, resetpassword, loginAdmin, GetWishlist, saveAddress, getUserCart, emptyCart, applyCoupon, createOrder, getOrders, deleteCartItems, updateOrderStatus, deleteFromWishlist, addToWishlist, addToCart } from '../controller/userController.js';
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js';
 import { loginValidator, passwordValidator, registerValidator } from "../middleware/ValidateMiddleware.js";
 const router = express.Router();
@@ -13,7 +13,7 @@ router.get('/allusers', getAllUsers);
 router.get('/refresh', handleRefreshToken);
 router.get('/logout', logout);
 router.post('/wishlist', authMiddleware, addToWishlist);
-router.post('/cart', authMiddleware, updateCartItems);
+router.post('/addtocart', authMiddleware, addToCart);
 router.post('/cart/applycoupon', authMiddleware, applyCoupon);
 router.post('/cart/cash-order', authMiddleware, createOrder);
 router.get('/wishlist', authMiddleware, GetWishlist);

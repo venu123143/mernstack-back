@@ -268,7 +268,57 @@ export const saveAddress = asyncHandler(async (req, res, next) => {
 
     }
 })
+export const addToCart = asyncHandler(async (req, res): Promise<any> => {
+    const { _id } = req.user as IUser
+    const { prodId, color, tipAmount } = req.body;
+    try {
+        let cart = await Cart.findOne({ orderBy: _id })
+        let prod = await Product.findById(prodId) as any
 
+        if (!prod && prod?.quantity < 1) {
+            return res.status(404).json({ message: "No Product or Product not available currently..." })
+        }
+        if (!cart) {
+            // Create a new cart if not found
+            cart = new Cart();
+        }
+        const basicAmount = 199
+        let deliveryCharge = cart.total < basicAmount ? 30 : 0
+        let tip = tipAmount ? tipAmount : 0
+        const handlingCharge = 2
+        let cartTotal = deliveryCharge + tip + handlingCharge + cart.total + prod.price
+        let total = cart.total + prod.price
+        // Check if the product already exists in the cart
+        const existingProductIndex = cart.products.findIndex(
+            (product) => product._id.toString() === prodId
+        );
+        if (existingProductIndex !== -1) {
+            // Update existing product
+            cart.products[existingProductIndex].count += 1;
+            cart.products[existingProductIndex].color = color;
+            cart.cartTotal = cartTotal
+            cart.total = total
+            cart.tip = tip
+            cart.deliveryCharge = deliveryCharge
+            cart.handlingCharge = handlingCharge
+
+        } else {
+            // Add new product to cart
+            cart.orderBy = _id
+            cart.total = total
+            cart.cartTotal = cartTotal
+            cart.deliveryCharge = deliveryCharge
+            cart.handlingCharge = handlingCharge
+            cart.products.push({ _id: prodId, count: 1, color: color });
+        }
+        await cart.save();
+
+        res.status(200).json({ message: 'Item(s) added/updated in the cart', cart });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+})
 
 export const updateCartItems = asyncHandler(async (req, res): Promise<any> => {
     const { _id } = req.user as IUser
@@ -346,36 +396,43 @@ export const updateCartItems = asyncHandler(async (req, res): Promise<any> => {
 export const deleteCartItems = asyncHandler(async (req, res): Promise<any> => {
     const { _id } = req.user as IUser
     const { prodId } = req.body
-    console.log(prodId, _id);
     try {
-        const product = await Product.findById(prodId)
-        if (!product) {
+        const prod = await Product.findById(prodId)
+        if (!prod) {
             return res.json({ message: "Product id is must", sucess: "False" })
         }
-        const cart = await Cart.findOne({ orderBy: _id });
+        let cart = await Cart.findOne({ orderBy: _id });
         if (cart === null) {
             return res.json({ message: "No produts in the cart", sucess: "False" })
         }
+        let basicAmount = 199
+        let total = cart.total - prod.price
+        let deliveryCharge = total < basicAmount ? 30 : 0
+        let tip = cart.tip > 0 ? cart.tip : 0
+        const handlingCharge = 2
+        let cartTotal = deliveryCharge + tip + handlingCharge + cart.total - prod.price
 
         const existingProduct = cart.products.find(product => product._id.toString() === prodId);
-        let basicAmount = 199
+
         if (existingProduct !== undefined) {
             if (existingProduct.count > 1) {
                 existingProduct.count -= 1;
-                cart.total = cart.total - product.price
-                cart.deliveryCharge = cart.total > basicAmount ? 0 : 30
-                cart.cartTotal = cart.total + cart.deliveryCharge + cart.handlingCharge + cart.tip
+                cart.total = total
+                cart.deliveryCharge = deliveryCharge
+                cart.cartTotal = cartTotal
+                cart.handlingCharge = handlingCharge
+                cart.tip = tip
             } else {
                 cart.products = cart.products.filter((item) => item._id.toString() !== prodId)
-                cart.total = cart.total - product.price
-                cart.deliveryCharge = cart.total > basicAmount ? 0 : 30
-                cart.cartTotal = cart.total + cart.deliveryCharge + cart.handlingCharge + cart.tip
+                cart.total = total
+                cart.deliveryCharge = deliveryCharge
+                cart.cartTotal = cartTotal
             }
             await cart.save();
             if (cart.products.length === 0) {
-                const cart = await Cart.findOneAndRemove({ orderBy: _id }, { new: true })
+                cart = await Cart.findOneAndRemove({ orderBy: _id }, { new: true })
             }
-            res.json({ message: "cart items decreased or item itself delted.", sucess: true })
+            res.json({ message: "cart items decreased or item itself delted.", sucess: true, cart })
 
         } else {
             res.json({ message: "product you are trying to delete is already deleted.", sucess: true })
@@ -443,7 +500,6 @@ export const createOrder = asyncHandler(async (req, res) => {
         else {
             finalAmount = userCart ? userCart.cartTotal : 0
         }
-        console.log(userCart, finalAmount);
         if (userCart !== null && userCart?.products !== undefined) {
             const newOrder = await new Order({
                 products: userCart?.products,

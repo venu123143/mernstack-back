@@ -252,6 +252,50 @@ export const saveAddress = asyncHandler((req, res, next) => __awaiter(void 0, vo
         throw new FancyError('not able to update address', 400);
     }
 }));
+export const addToCart = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { _id } = req.user;
+    const { prodId, color, tipAmount } = req.body;
+    try {
+        let cart = yield Cart.findOne({ orderBy: _id });
+        let prod = yield Product.findById(prodId);
+        if (!prod && (prod === null || prod === void 0 ? void 0 : prod.quantity) < 1) {
+            return res.status(404).json({ message: "No Product or Product not available currently..." });
+        }
+        if (!cart) {
+            cart = new Cart();
+        }
+        const basicAmount = 199;
+        let deliveryCharge = cart.total < basicAmount ? 30 : 0;
+        let tip = tipAmount ? tipAmount : 0;
+        const handlingCharge = 2;
+        let cartTotal = deliveryCharge + tip + handlingCharge + cart.total + prod.price;
+        let total = cart.total + prod.price;
+        const existingProductIndex = cart.products.findIndex((product) => product._id.toString() === prodId);
+        if (existingProductIndex !== -1) {
+            cart.products[existingProductIndex].count += 1;
+            cart.products[existingProductIndex].color = color;
+            cart.cartTotal = cartTotal;
+            cart.total = total;
+            cart.tip = tip;
+            cart.deliveryCharge = deliveryCharge;
+            cart.handlingCharge = handlingCharge;
+        }
+        else {
+            cart.orderBy = _id;
+            cart.total = total;
+            cart.cartTotal = cartTotal;
+            cart.deliveryCharge = deliveryCharge;
+            cart.handlingCharge = handlingCharge;
+            cart.products.push({ _id: prodId, count: 1, color: color });
+        }
+        yield cart.save();
+        res.status(200).json({ message: 'Item(s) added/updated in the cart', cart });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
 export const updateCartItems = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     const { prodId, tipAmount, color } = req.body;
@@ -323,36 +367,42 @@ export const updateCartItems = asyncHandler((req, res) => __awaiter(void 0, void
 export const deleteCartItems = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     const { prodId } = req.body;
-    console.log(prodId, _id);
     try {
-        const product = yield Product.findById(prodId);
-        if (!product) {
+        const prod = yield Product.findById(prodId);
+        if (!prod) {
             return res.json({ message: "Product id is must", sucess: "False" });
         }
-        const cart = yield Cart.findOne({ orderBy: _id });
+        let cart = yield Cart.findOne({ orderBy: _id });
         if (cart === null) {
             return res.json({ message: "No produts in the cart", sucess: "False" });
         }
-        const existingProduct = cart.products.find(product => product._id.toString() === prodId);
         let basicAmount = 199;
+        let total = cart.total - prod.price;
+        let deliveryCharge = total < basicAmount ? 30 : 0;
+        let tip = cart.tip > 0 ? cart.tip : 0;
+        const handlingCharge = 2;
+        let cartTotal = deliveryCharge + tip + handlingCharge + cart.total - prod.price;
+        const existingProduct = cart.products.find(product => product._id.toString() === prodId);
         if (existingProduct !== undefined) {
             if (existingProduct.count > 1) {
                 existingProduct.count -= 1;
-                cart.total = cart.total - product.price;
-                cart.deliveryCharge = cart.total > basicAmount ? 0 : 30;
-                cart.cartTotal = cart.total + cart.deliveryCharge + cart.handlingCharge + cart.tip;
+                cart.total = total;
+                cart.deliveryCharge = deliveryCharge;
+                cart.cartTotal = cartTotal;
+                cart.handlingCharge = handlingCharge;
+                cart.tip = tip;
             }
             else {
                 cart.products = cart.products.filter((item) => item._id.toString() !== prodId);
-                cart.total = cart.total - product.price;
-                cart.deliveryCharge = cart.total > basicAmount ? 0 : 30;
-                cart.cartTotal = cart.total + cart.deliveryCharge + cart.handlingCharge + cart.tip;
+                cart.total = total;
+                cart.deliveryCharge = deliveryCharge;
+                cart.cartTotal = cartTotal;
             }
             yield cart.save();
             if (cart.products.length === 0) {
-                const cart = yield Cart.findOneAndRemove({ orderBy: _id });
+                cart = yield Cart.findOneAndRemove({ orderBy: _id }, { new: true });
             }
-            res.json({ message: "cart items decreased or item itself delted.", sucess: true });
+            res.json({ message: "cart items decreased or item itself delted.", sucess: true, cart });
         }
         else {
             res.json({ message: "product you are trying to delete is already deleted.", sucess: true });
@@ -378,7 +428,7 @@ export const emptyCart = asyncHandler((req, res) => __awaiter(void 0, void 0, vo
     console.log(_id);
     try {
         const user = yield User.findOne({ _id });
-        const cart = yield Cart.findOneAndRemove({ orderBy: user === null || user === void 0 ? void 0 : user._id });
+        const cart = yield Cart.findOneAndRemove({ orderBy: user === null || user === void 0 ? void 0 : user._id }, { new: true });
         res.json({ cart });
     }
     catch (error) {
@@ -414,7 +464,6 @@ export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
         else {
             finalAmount = userCart ? userCart.cartTotal : 0;
         }
-        console.log(userCart, finalAmount);
         if (userCart !== null && (userCart === null || userCart === void 0 ? void 0 : userCart.products) !== undefined) {
             const newOrder = yield new Order({
                 products: userCart === null || userCart === void 0 ? void 0 : userCart.products,

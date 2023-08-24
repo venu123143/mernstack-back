@@ -8,7 +8,7 @@ import {
     saveAddress, getUserCart, emptyCart,
     applyCoupon, createOrder, getOrders,
     updateCartItems, deleteCartItems, updateOrderStatus,
-    deleteFromWishlist, addToWishlist
+    deleteFromWishlist, addToWishlist, addToCart
 } from '../controller/userController.js'
 
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js'
@@ -27,8 +27,8 @@ router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
 router.post('/wishlist', authMiddleware, addToWishlist)
 
-// router.post('/cart', authMiddleware, addToCart)
-router.post('/cart', authMiddleware, updateCartItems)
+router.post('/addtocart', authMiddleware, addToCart)
+// router.post('/cart', authMiddleware, updateCartItems)
 router.post('/cart/applycoupon', authMiddleware, applyCoupon)
 router.post('/cart/cash-order', authMiddleware, createOrder)
 router.get('/wishlist', authMiddleware, GetWishlist)
