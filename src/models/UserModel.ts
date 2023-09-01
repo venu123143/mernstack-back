@@ -9,6 +9,7 @@ export interface IUser extends Document {
     lastname: string,
     email: string,
     phone: string,
+    profile: string,
     password: string,
     role: string,
     isBlocked: boolean,
@@ -51,6 +52,9 @@ const userSchema: Schema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    profile: {
+        type: String
+    },
     role: {
         type: String,
         default: "user"
@@ -92,6 +96,8 @@ userSchema.methods.generateAuthToken = async function () {
         let cur_token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY as jwt.Secret, { expiresIn: '1d' });
         this.refreshToken = cur_token
         await this.save();
+      
+        
         return cur_token;
     } catch (error) {
         console.log(error);

@@ -1,18 +1,29 @@
+import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
 import { validationResult } from "express-validator"
-
+import session from 'express-session'
 import uniqueId from "uniqid"
+
 import User, { IUser } from "../models/UserModel.js"
 import Product, { IProduct } from "../models/ProductModel.js";
 import Cart, { ICart, ICartItem } from "../models/CartModel.js";
 import Order from "../models/OrderModel.js";
 import Coupon from "../models/CouponModel.js";
 
+import { getGoogleOauthTokens, getGoogleUser } from "../utils/GoogleAuth.js";
 import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js'
 import NodeMailer from "../utils/NodeMailer.js"
+
+
+declare module 'express-session' {
+    interface Session {
+        user?: IUser;
+    }
+}
+
 // register
 export const createUser = asyncHandler(async (req, res): Promise<any> => {
     const { firstname, lastname, email, password, mobile } = req.body;
@@ -87,8 +98,15 @@ export const logout = asyncHandler(async (req, res) => {
     if (!cookies.loginToken) {
         throw new FancyError('no refresh token in cookies', 404)
     }
-    await User.findOneAndUpdate({ refreshToken: cookies.loginToken }, { refreshToken: "" })
-    res.clearCookie(cookies.loginToken).status(204)
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        res.send('Logged out successfully');
+    });
+
+    await User.findOneAndUpdate({ refreshToken: cookies?.loginToken }, { refreshToken: "" })
+    res.clearCookie(cookies?.loginToken).status(204)
         .json({ message: 'user logged out sucessfully', sucess: true })
 })
 
@@ -575,3 +593,52 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 
     }
 })
+
+
+const googleOauthHandler = async (req: Request, res: Response) => {
+    // GET THE CODE FROM QS
+    const code = req.query.code as string
+
+    try {
+        // GET THE ID AND ACCESSTOKE WITH THE CODE
+        const { id_token, access_token } = await getGoogleOauthTokens({ code })
+        const googleUser = await getGoogleUser({ id_token, access_token })
+        // jwt.decode(id_token)
+        if (!googleUser.verified_email) {
+            return res.status(403).send('Google acoount is not verified')
+        }
+        // GET THE USER WITH TOKENS and UPSERT THE USER
+        const user = await User.findOneAndUpdate({ email: googleUser.email },
+            {
+                email: googleUser.email,
+                firstname: googleUser.given_name,
+                lastname: googleUser.family_name,
+                profile: googleUser.picture,
+            }, { upsert: true, new: true })
+
+        // CREATE SESSION
+        req.session.user = user as IUser
+        req.session.save();
+
+        // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
+        const token = await user.generateAuthToken()
+        const options = {
+            maxAge: 24 * 60 * 60 * 1000,
+            secure: false,
+            httpOnly: false,
+        }
+        res.cookie('loginToken', token, options)
+
+        //  AND REDIRECT BACK TO CLIENT
+        res.status(201).redirect(process.env.CLIENT_ORIGIN as string)
+
+
+    } catch (error) {
+        return res.redirect(process.env.CLIENT_ORIGIN as string)
+
+    }
+
+
+}
+
+export default googleOauthHandler

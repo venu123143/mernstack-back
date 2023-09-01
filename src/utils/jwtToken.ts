@@ -1,9 +1,8 @@
 import { IUser } from "../models/UserModel.js"
 import { Response } from "express";
 
-const jwtToken = async (user: IUser, statusCode: number, res: Response) => {    
+const jwtToken = async (user: IUser, statusCode: number, res: Response) => {
     const token = await user.generateAuthToken()
-    // console.log(token);
 
     if (token !== undefined) {
         // expiresIn:"3d",

@@ -16,6 +16,7 @@ import Product from "../models/ProductModel.js";
 import Cart from "../models/CartModel.js";
 import Order from "../models/OrderModel.js";
 import Coupon from "../models/CouponModel.js";
+import { getGoogleOauthTokens, getGoogleUser } from "../utils/GoogleAuth.js";
 import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js';
@@ -84,8 +85,14 @@ export const logout = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
     if (!cookies.loginToken) {
         throw new FancyError('no refresh token in cookies', 404);
     }
-    yield User.findOneAndUpdate({ refreshToken: cookies.loginToken }, { refreshToken: "" });
-    res.clearCookie(cookies.loginToken).status(204)
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        res.send('Logged out successfully');
+    });
+    yield User.findOneAndUpdate({ refreshToken: cookies === null || cookies === void 0 ? void 0 : cookies.loginToken }, { refreshToken: "" });
+    res.clearCookie(cookies === null || cookies === void 0 ? void 0 : cookies.loginToken).status(204)
         .json({ message: 'user logged out sucessfully', sucess: true });
 }));
 export const getAllUsers = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -531,3 +538,33 @@ export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, vo
         throw new FancyError("not able to update status", 400);
     }
 }));
+const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const code = req.query.code;
+    try {
+        const { id_token, access_token } = yield getGoogleOauthTokens({ code });
+        const googleUser = yield getGoogleUser({ id_token, access_token });
+        if (!googleUser.verified_email) {
+            return res.status(403).send('Google acoount is not verified');
+        }
+        const user = yield User.findOneAndUpdate({ email: googleUser.email }, {
+            email: googleUser.email,
+            firstname: googleUser.given_name,
+            lastname: googleUser.family_name,
+            profile: googleUser.picture,
+        }, { upsert: true, new: true });
+        req.session.user = user;
+        req.session.save();
+        const token = yield user.generateAuthToken();
+        const options = {
+            maxAge: 24 * 60 * 60 * 1000,
+            secure: false,
+            httpOnly: false,
+        };
+        res.cookie('loginToken', token, options);
+        res.status(201).redirect(process.env.CLIENT_ORIGIN);
+    }
+    catch (error) {
+        return res.redirect(process.env.CLIENT_ORIGIN);
+    }
+});
+export default googleOauthHandler;

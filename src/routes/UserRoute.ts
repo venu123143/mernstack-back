@@ -1,5 +1,5 @@
 import express from "express"
-import {
+import googleOauthHandler, {
     createUser, loginUser, getAllUsers,
     getUser, deleteUser, updateUser,
     blockUser, unblockUser, handleRefreshToken,
@@ -23,6 +23,7 @@ router.put('/resetpassword/:token', passwordValidator, resetpassword)
 router.put('/password', passwordValidator, authMiddleware, updatePassword)
 router.post('/admin-login', loginValidator, loginAdmin)
 router.get('/allusers', getAllUsers)
+router.get('/sessions/oauth/google', googleOauthHandler)
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
 router.post('/wishlist', authMiddleware, addToWishlist)

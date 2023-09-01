@@ -2,7 +2,7 @@ import cookieParser from "cookie-parser"
 import express, { Application } from "express"
 import cors from "cors"
 import morgan from "morgan"
-
+import session from 'express-session'
 // Handle uncaught Exception
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
@@ -36,7 +36,7 @@ export interface Options {
     optionSuccessStatus: number
 }
 const options: Options = {
-    origin: ['http://localhost:3000','http://localhost:5173'],
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
@@ -45,7 +45,7 @@ app.use(cors(options));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'))
-
+app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
 
 // controllers
 app.get('/', (req, res) => {
