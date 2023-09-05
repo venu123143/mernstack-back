@@ -51,3 +51,4 @@ export const getGoogleUser = async ({ id_token, access_token }: { id_token: stri
         throw error
     }
 }
+

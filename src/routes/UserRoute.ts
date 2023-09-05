@@ -1,5 +1,6 @@
 import express from "express"
-import googleOauthHandler, {
+import {
+    googleOauthHandler,
     createUser, loginUser, getAllUsers,
     getUser, deleteUser, updateUser,
     blockUser, unblockUser, handleRefreshToken,
@@ -8,7 +9,7 @@ import googleOauthHandler, {
     saveAddress, getUserCart, emptyCart,
     applyCoupon, createOrder, getOrders,
     updateCartItems, deleteCartItems, updateOrderStatus,
-    deleteFromWishlist, addToWishlist, addToCart
+    deleteFromWishlist, addToWishlist, addToCart, SendOtpViaSms, verifyOtp
 } from '../controller/userController.js'
 
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js'
@@ -18,6 +19,8 @@ const router = express.Router();
 
 router.post('/register', registerValidator, createUser)
 router.post('/login', loginValidator, loginUser)
+router.post('/req-otp', SendOtpViaSms)
+router.post('/verify-otp', verifyOtp)
 router.post('/forgot-password-token', loginValidator, forgotPasswordToken)
 router.put('/resetpassword/:token', passwordValidator, resetpassword)
 router.put('/password', passwordValidator, authMiddleware, updatePassword)

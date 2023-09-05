@@ -16,7 +16,9 @@ import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js'
 import NodeMailer from "../utils/NodeMailer.js"
+import Twilio from 'twilio';
 
+const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 
 declare module 'express-session' {
     interface Session {
@@ -595,7 +597,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 })
 
 
-const googleOauthHandler = async (req: Request, res: Response) => {
+export const googleOauthHandler = async (req: Request, res: Response) => {
     // GET THE CODE FROM QS
     const code = req.query.code as string
 
@@ -635,10 +637,44 @@ const googleOauthHandler = async (req: Request, res: Response) => {
 
     } catch (error) {
         return res.redirect(process.env.CLIENT_ORIGIN as string)
+    }
+}
+
+var otp: string;
+const sendTextMessage = async (mobile: string, otp: string) => {
+    try {
+        const msg = await client.messages
+            .create({
+                body: `Your Otp is ${otp} , valid for next 10-min.`,
+                to: `+91${mobile}`,
+                from: '+16562188441', // From a valid Twilio number
+            })
+        return msg
+    } catch (error) {
+        return error
+    }
+
+};
+export const SendOtpViaSms = (req: Request, res: Response) => {
+    const mobile = req.body?.mobile
+    otp = Math.round(Math.random() * 1000000).toString();
+    try {
+        const msg = sendTextMessage(mobile, otp)
+        res.status(200).json({ success: true, message: `Verification code sent to ${mobile} ` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: `Incorrect Number or Invalid Number.` });
 
     }
 
-
 }
 
-export default googleOauthHandler
+export const verifyOtp = async (req: Request, res: Response) => {
+    const curOTP = req.body?.otp
+
+    const enterOtp = curOTP.toString().replaceAll(',', '')
+    if (otp == enterOtp) {
+        res.status(200).json({ success: true, message: 'user logged in sucessfully.' })
+    } else {
+        res.status(403).json({ success: true, message: 'otp incorrect.' })
+    }
+}

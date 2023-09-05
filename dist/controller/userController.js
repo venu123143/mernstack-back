@@ -538,7 +538,7 @@ export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, vo
         throw new FancyError("not able to update status", 400);
     }
 }));
-const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = req.query.code;
     try {
         const { id_token, access_token } = yield getGoogleOauthTokens({ code });
@@ -567,4 +567,7 @@ const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.redirect(process.env.CLIENT_ORIGIN);
     }
 });
-export default googleOauthHandler;
+export const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const otp = Math.floor(Math.random() * 1000000);
+    console.log(otp);
+});
