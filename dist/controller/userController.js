@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import Twilio from 'twilio';
 import asyncHandler from "express-async-handler";
 import crypto from "crypto";
 import { validationResult } from "express-validator";
@@ -21,6 +22,7 @@ import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js';
 import NodeMailer from "../utils/NodeMailer.js";
+const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { firstname, lastname, email, password, mobile } = req.body;
     if (!firstname || !lastname || !email || !password || !mobile) {
@@ -567,7 +569,41 @@ export const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0
         return res.redirect(process.env.CLIENT_ORIGIN);
     }
 });
-export const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const otp = Math.floor(Math.random() * 1000000);
-    console.log(otp);
+var otp;
+const sendTextMessage = (mobile, otp) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const msg = yield client.messages
+            .create({
+            body: `Your Otp is ${otp} , valid for next 10-min.`,
+            to: `+91${mobile}`,
+            from: '+16562188441',
+        });
+        return msg;
+    }
+    catch (error) {
+        return error;
+    }
+});
+export const SendOtpViaSms = (req, res) => {
+    var _a;
+    const mobile = (_a = req.body) === null || _a === void 0 ? void 0 : _a.mobile;
+    otp = Math.round(Math.random() * 1000000).toString();
+    try {
+        const msg = sendTextMessage(mobile, otp);
+        res.status(200).json({ success: true, message: `Verification code sent to ${mobile} ` });
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: `Incorrect Number or Invalid Number.` });
+    }
+};
+export const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const curOTP = (_c = req.body) === null || _c === void 0 ? void 0 : _c.otp;
+    const enterOtp = curOTP.toString().replaceAll(',', '');
+    if (otp == enterOtp) {
+        res.status(200).json({ success: true, message: 'user logged in sucessfully.' });
+    }
+    else {
+        res.status(403).json({ success: true, message: 'otp incorrect.' });
+    }
 });

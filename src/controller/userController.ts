@@ -1,9 +1,11 @@
-import { Request, Response } from "express";
+import Twilio from 'twilio';
+import { Request, Response } from "express";    
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
 import { validationResult } from "express-validator"
 import session from 'express-session'
 import uniqueId from "uniqid"
+import { Queue } from "bullmq"
 
 import User, { IUser } from "../models/UserModel.js"
 import Product, { IProduct } from "../models/ProductModel.js";
@@ -16,7 +18,6 @@ import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js'
 import NodeMailer from "../utils/NodeMailer.js"
-import Twilio from 'twilio';
 
 const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 
@@ -205,11 +206,11 @@ export interface Email {
 
 export const forgotPasswordToken = asyncHandler(async (req, res) => {
     const { email } = req.body as IUser
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email }) 
 
     if (!user) throw new FancyError('user not found with this email', 404)
     try {
-        const token = await user.createPasswordResetToken();
+        const token = await user.createPasswordResetToken();  
         const ResetUrl = `<p>Hey, ${user.firstname} how are you :-)</p> Please follow this link to reset your Password. This Link will valid for next 10 minutes.
          <a href='${process.env.BACKEND_HOST}/api/users/resetpassword/${token}'>Click Here</a>`
 
@@ -655,12 +656,21 @@ const sendTextMessage = async (mobile: string, otp: string) => {
     }
 
 };
-export const SendOtpViaSms = (req: Request, res: Response) => {
+export const SendOtpViaSms =async (req: Request, res: Response) => {
     const mobile = req.body?.mobile
     otp = Math.round(Math.random() * 1000000).toString();
     try {
-        const msg = sendTextMessage(mobile, otp)
-        res.status(200).json({ success: true, message: `Verification code sent to ${mobile} ` });
+        const user = await User.findOneAndUpdate(
+            { mobile },
+            { mobile, otp },
+            { upsert: true, new: true }
+          );
+          // const msg = sendTextMessage(mobile, otp)
+          res.status(200).json({
+            user,
+            success: true,
+            message: `Verification code sent to ${mobile} `,
+          });
     } catch (error) {
         res.status(500).json({ success: false, message: `Incorrect Number or Invalid Number.` });
 
@@ -669,12 +679,60 @@ export const SendOtpViaSms = (req: Request, res: Response) => {
 }
 
 export const verifyOtp = async (req: Request, res: Response) => {
-    const curOTP = req.body?.otp
-
-    const enterOtp = curOTP.toString().replaceAll(',', '')
-    if (otp == enterOtp) {
-        res.status(200).json({ success: true, message: 'user logged in sucessfully.' })
-    } else {
-        res.status(403).json({ success: true, message: 'otp incorrect.' })
-    }
+    const curOTP = req.body?.otp;
+    const mobile = req.body?.mobile;
+    const enterOtp = curOTP.toString().replaceAll(",", "");
+  
+    const user = await User.findOne({ mobile });
+    const time = user?.updatedAt?.getTime();
+    const currentTime = new Date().getTime();
+    const otpValidityDuration = 10 * 60 * 1000;
+    const isValid = time ? currentTime - time : 13;
+    try {
+        if (
+          user &&
+          user.otp == enterOtp &&
+          time &&
+          isValid <= otpValidityDuration
+        ) {
+          // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
+          const token = await user.generateAuthToken();
+          const options = {
+            maxAge: 24 * 60 * 60 * 1000,
+            secure: false,
+            httpOnly: true,
+          };
+          res
+            .status(201)
+            .cookie("loginToken", token, options)
+            .json({ user, success: true, message: "user logged in sucessfully." });
+        } else {
+          res
+            .status(403)
+            .json({ success: false, message: "otp incorrect or timeout." });
+        }
+      } catch (error: any) {
+        throw new Error(error);
+      }
 }
+
+
+// const emailQueue = new Queue('emailQueue')
+// producer and to complete this added task you need worker. 
+// export const sendEmailToUsers = async (req: Request, res: Response) => {
+//     try {
+//         // const users = await User.find({})
+//         const res1 = await emailQueue.add('addEmail', { name: 'venu gopal ', email: 'venugopal.v@ahex.co.in', message: 'hi this is the message for you. dont tell to anyone' })
+//         const res2 = await emailQueue.add('addEmail', { name: 'ram prakash ', email: 'ram.v@ahex.co.in', message: 'hi this is the message for you. dont tell to anyone' })
+//         const res3 = await emailQueue.add('addEmail', { name: 'srinivas ', email: 'srinivas.s@ahex.co.in', message: 'hi this is the message for you. dont tell to anyone' })
+//         const res4 = await emailQueue.add('addEmail', { name: 'zuber', email: 'zuber.sk@ahex.co.in', message: 'hi this is the message for you. dont tell to anyone' })
+//         const res5 = await emailQueue.add('addEmail', { name: 'shubam ', email: 'shubam.s@ahex.co.in', message: 'hi this is the message for you. dont tell to anyone' })
+//         const res6 = await emailQueue.add('addEmail', { name: 'lakshman', email: 'lakshman.ls@ahex.co.in', message: 'hi this is the message for you. dont tell to anyone' })
+//         console.log(res1.id, res2.id, res3.id, res4.id, res5.id, res6.id, ' is added to queue.')
+
+//         res.status(201).json({ message: 'task is added and started processing to the queue' })
+//     } catch (error) {
+//         console.log(error);
+//         res.status(400).json(error)
+//     }
+// }

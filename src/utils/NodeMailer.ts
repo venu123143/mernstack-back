@@ -1,4 +1,4 @@
-import { Email } from 'controller/userController.js';
+import { Email } from '../controller/userController.js';
 import nodemailer, { TransportOptions } from 'nodemailer'
 
 const NodeMailer = async (data: Email) => {

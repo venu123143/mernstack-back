@@ -31,6 +31,8 @@ router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
 router.post('/wishlist', authMiddleware, addToWishlist)
 
+// router.post('/sendEmailToUsers', sendEmailToUsers)
+
 router.post('/addtocart', authMiddleware, addToCart)
 // router.post('/cart', authMiddleware, updateCartItems)
 router.post('/cart/applycoupon', authMiddleware, applyCoupon)

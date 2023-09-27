@@ -45,7 +45,7 @@ export const productImgResize = async (req: Request, res: Response, next: NextFu
 }
 export const blogImgResize = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.files) return next();
-
+ 
     const files = req.files as Express.Multer.File[];
 
     await Promise.all(files.map(async (file: Request["file"]) => {
