@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import crypto from "crypto";
 const userSchema = new mongoose.Schema({
     firstname: {
@@ -36,20 +36,22 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     profile: {
-        type: String
+        type: String,
     },
     role: {
         type: String,
-        default: "user"
+        default: "user",
     },
     isBlocked: {
         type: Boolean,
-        default: false
+        default: false,
     },
-    cart: [{
+    cart: [
+        {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Cart'
-        }],
+            ref: "Cart",
+        },
+    ],
     address: {
         type: String,
     },
@@ -57,13 +59,14 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
     },
+    otp: String,
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
-}, { collection: 'users', timestamps: true });
-userSchema.pre('save', function (next) {
+}, { collection: "users", timestamps: true });
+userSchema.pre("save", function (next) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (this.isModified('password')) {
+        if (this.isModified("password")) {
             this.password = yield bcrypt.hash(this.password, 12);
         }
         next();
@@ -72,7 +75,7 @@ userSchema.pre('save', function (next) {
 userSchema.methods.generateAuthToken = function () {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let cur_token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY, { expiresIn: '1d' });
+            let cur_token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
             this.refreshToken = cur_token;
             yield this.save();
             return cur_token;
@@ -89,11 +92,14 @@ userSchema.methods.isPasswordMatched = function (password) {
 };
 userSchema.methods.createPasswordResetToken = function () {
     return __awaiter(this, void 0, void 0, function* () {
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        this.passwordResetToken = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
         this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
         yield this.save();
         return resetToken;
     });
 };
-export default mongoose.model('User', userSchema);
+export default mongoose.model("User", userSchema);

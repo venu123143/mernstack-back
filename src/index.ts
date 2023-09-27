@@ -3,6 +3,8 @@ import express, { Application } from "express"
 import cors from "cors"
 import morgan from "morgan"
 import session from 'express-session'
+
+
 // Handle uncaught Exception
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);

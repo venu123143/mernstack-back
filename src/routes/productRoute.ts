@@ -7,7 +7,8 @@ import {
     createProduct, getProduct,
     getAllProducts, updateProduct,
     deleteProduct, addToWishlist,
-    rating, uploadImages, deleteImages
+    rating, uploadImages, deleteImages,
+    createCheckoutSession
 } from "../controller/productController.js";
 
 
@@ -15,6 +16,7 @@ const router = express.Router();
 
 
 router.post('/', authMiddleware, isAdmin, createProduct)
+router.post('/create-checkout-session',createCheckoutSession)
 router.put('/upload/:id', authMiddleware,
     isAdmin, uploadPhoto.array('images', 10),
     productImgResize, uploadImages)

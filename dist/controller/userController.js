@@ -584,26 +584,55 @@ const sendTextMessage = (mobile, otp) => __awaiter(void 0, void 0, void 0, funct
         return error;
     }
 });
-export const SendOtpViaSms = (req, res) => {
-    var _a;
-    const mobile = (_a = req.body) === null || _a === void 0 ? void 0 : _a.mobile;
+export const SendOtpViaSms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const mobile = (_c = req.body) === null || _c === void 0 ? void 0 : _c.mobile;
     otp = Math.round(Math.random() * 1000000).toString();
     try {
-        const msg = sendTextMessage(mobile, otp);
-        res.status(200).json({ success: true, message: `Verification code sent to ${mobile} ` });
+        const user = yield User.findOneAndUpdate({ mobile }, { mobile, otp }, { upsert: true, new: true });
+        res.status(200).json({
+            user,
+            success: true,
+            message: `Verification code sent to ${mobile} `,
+        });
     }
     catch (error) {
         res.status(500).json({ success: false, message: `Incorrect Number or Invalid Number.` });
     }
-};
+});
 export const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
-    const curOTP = (_c = req.body) === null || _c === void 0 ? void 0 : _c.otp;
-    const enterOtp = curOTP.toString().replaceAll(',', '');
-    if (otp == enterOtp) {
-        res.status(200).json({ success: true, message: 'user logged in sucessfully.' });
+    var _d, _e, _f;
+    const curOTP = (_d = req.body) === null || _d === void 0 ? void 0 : _d.otp;
+    const mobile = (_e = req.body) === null || _e === void 0 ? void 0 : _e.mobile;
+    const enterOtp = curOTP.toString().replaceAll(",", "");
+    const user = yield User.findOne({ mobile });
+    const time = (_f = user === null || user === void 0 ? void 0 : user.updatedAt) === null || _f === void 0 ? void 0 : _f.getTime();
+    const currentTime = new Date().getTime();
+    const otpValidityDuration = 10 * 60 * 1000;
+    const isValid = time ? currentTime - time : 13;
+    try {
+        if (user &&
+            user.otp == enterOtp &&
+            time &&
+            isValid <= otpValidityDuration) {
+            const token = yield user.generateAuthToken();
+            const options = {
+                maxAge: 24 * 60 * 60 * 1000,
+                secure: false,
+                httpOnly: true,
+            };
+            res
+                .status(201)
+                .cookie("loginToken", token, options)
+                .json({ user, success: true, message: "user logged in sucessfully." });
+        }
+        else {
+            res
+                .status(403)
+                .json({ success: false, message: "otp incorrect or timeout." });
+        }
     }
-    else {
-        res.status(403).json({ success: true, message: 'otp incorrect.' });
+    catch (error) {
+        throw new Error(error);
     }
 });

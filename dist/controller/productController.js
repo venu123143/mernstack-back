@@ -9,11 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import asyncHandler from "express-async-handler";
 import slugify from "slugify";
-import fs from 'fs';
+import fs from "fs";
+import Stripe from "stripe";
 import Product from "../models/ProductModel.js";
 import FancyError from "../utils/FancyError.js";
 import User from "../models/UserModel.js";
 import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2023-08-16",
+});
 export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.body.title) {
@@ -33,7 +37,9 @@ export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title);
         }
-        const updateProd = yield Product.findOneAndUpdate({ _id: id }, req.body, { new: true }).populate(['category', 'brand', 'color']);
+        const updateProd = yield Product.findOneAndUpdate({ _id: id }, req.body, {
+            new: true,
+        }).populate(["category", "brand", "color"]);
         res.json(updateProd);
     }
     catch (error) {
@@ -58,7 +64,11 @@ export const deleteProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
 export const getProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const findProduct = yield Product.findById({ _id: id }).populate(['category', 'brand', 'color']);
+        const findProduct = yield Product.findById({ _id: id }).populate([
+            "category",
+            "brand",
+            "color",
+        ]);
         if (findProduct !== null) {
             res.json(findProduct);
         }
@@ -74,24 +84,24 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
     try {
         const queryObj = Object.assign({}, req.query);
         const excludeFields = ["page", "sort", "limit", "fields"];
-        excludeFields.forEach(el => delete queryObj[el]);
+        excludeFields.forEach((el) => delete queryObj[el]);
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
         var query = Product.find(JSON.parse(queryStr));
         if (req.query.sort) {
             var s = req.query.sort;
-            const sortBy = s.split(',').join(' ');
+            const sortBy = s.split(",").join(" ");
             query = query.sort(sortBy);
         }
         else {
-            query = query.sort('-createdAt');
+            query = query.sort("-createdAt");
         }
         if (req.query.fields) {
             const fields = req.query.fields;
-            query = query.select(fields.split(',').join(' '));
+            query = query.select(fields.split(",").join(" "));
         }
         else {
-            query = query.select('-__v');
+            query = query.select("-__v");
         }
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit);
@@ -100,10 +110,12 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
         const countDocuments = yield Product.countDocuments();
         if (req.query.page) {
             if (skip >= countDocuments) {
-                return res.status(404).json({ message: "this page doesnot exist", statusCode: 404 });
+                return res
+                    .status(404)
+                    .json({ message: "this page doesnot exist", statusCode: 404 });
             }
         }
-        const products = yield query.populate(['category', 'brand', 'color']);
+        const products = yield query.populate(["category", "brand", "color"]);
         return res.json(products);
     }
     catch (error) {
@@ -121,13 +133,13 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
         }
         if (alreadyAdded) {
             let user = yield User.findByIdAndUpdate(_id, {
-                $pull: { wishlist: prodId }
+                $pull: { wishlist: prodId },
             }, { new: true });
             res.json(user);
         }
         else {
             let user = yield User.findByIdAndUpdate(_id, {
-                $push: { wishlist: prodId }
+                $push: { wishlist: prodId },
             }, { new: true });
             res.json(user);
         }
@@ -148,13 +160,15 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
         }
         else {
             const rateProduct = yield Product.findByIdAndUpdate(prodId, {
-                $push: { ratings: { star: star, postedBy: _id } }
+                $push: { ratings: { star: star, postedBy: _id } },
             }, { new: true });
         }
         const AllRatings = yield Product.findById(prodId);
         let totalRatings = (_b = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _b === void 0 ? void 0 : _b.length;
         if ((AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) !== undefined && totalRatings !== undefined) {
-            let ratingSum = AllRatings.ratings.map((item) => item.star).reduce((prev, cur) => prev + cur, 0);
+            let ratingSum = AllRatings.ratings
+                .map((item) => item.star)
+                .reduce((prev, cur) => prev + cur, 0);
             let actualRating = Math.round(ratingSum / totalRatings);
             const finalProd = yield Product.findByIdAndUpdate(prodId, { totalRating: actualRating }, { new: true });
             res.json(finalProd);
@@ -187,9 +201,37 @@ export const deleteImages = asyncHandler((req, res) => __awaiter(void 0, void 0,
     const { path } = req.params;
     try {
         const deleted = deleteImage(path);
-        res.json({ message: "deleted sucessfully", });
+        res.json({ message: "deleted sucessfully" });
     }
     catch (error) {
         throw new FancyError("cannot delete images", 400);
+    }
+}));
+export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const products = req.body;
+    try {
+        const line_items = (_c = products === null || products === void 0 ? void 0 : products.cartItems) === null || _c === void 0 ? void 0 : _c.map((product) => ({
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: product.name,
+                    description: product.desc,
+                },
+                unit_amount: product.price * 100,
+            },
+            quantity: product.cartQuantity,
+        }));
+        const session = yield stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items: line_items,
+            mode: "payment",
+            success_url: "http://localhost:5173/sucess",
+            cancel_url: "http://localhost:5173/cancel",
+        });
+        res.json({ id: session.id });
+    }
+    catch (error) {
+        throw new FancyError("Payment Failed, due to technical issue", 400);
     }
 }));
