@@ -2,7 +2,6 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import session from 'express-session';
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
     console.log(`shutting down the server for handling uncaught Exception`);
@@ -21,7 +20,7 @@ import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
 import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5154'],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
@@ -30,7 +29,6 @@ app.use(cors(options));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY }));
 app.get('/', (req, res) => {
     res.send('backend home route sucessful');
 });

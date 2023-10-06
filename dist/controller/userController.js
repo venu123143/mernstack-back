@@ -66,7 +66,7 @@ export const loginAdmin = asyncHandler((req, res) => __awaiter(void 0, void 0, v
         return jwtToken(findAdmin, 201, res);
     }
     else {
-        throw new FancyError('Invalid Credentials or User Doesnot Exist', 403);
+        throw new FancyError('Invalid Credentials or User Doesnot Exist', 400);
     }
 }));
 export const handleRefreshToken = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {

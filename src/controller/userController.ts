@@ -1,5 +1,5 @@
 import Twilio from 'twilio';
-import { Request, Response } from "express";    
+import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
 import { validationResult } from "express-validator"
@@ -51,6 +51,7 @@ export const createUser = asyncHandler(async (req, res): Promise<any> => {
 // User login
 export const loginUser = asyncHandler(async (req, res): Promise<any> => {
     const { email, password } = req.body;
+
     // check user exists or not
     const findUser = await User.findOne({ email });
     const errors = validationResult(req)
@@ -75,8 +76,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
     if (findAdmin && await findAdmin.isPasswordMatched(password)) {
         return jwtToken(findAdmin, 201, res)
     } else {
-
-        throw new FancyError('Invalid Credentials or User Doesnot Exist', 403)
+        throw new FancyError('Invalid Credentials or User Doesnot Exist', 400)
     }
 })
 // handle refresh token
@@ -206,11 +206,11 @@ export interface Email {
 
 export const forgotPasswordToken = asyncHandler(async (req, res) => {
     const { email } = req.body as IUser
-    const user = await User.findOne({ email }) 
+    const user = await User.findOne({ email })
 
     if (!user) throw new FancyError('user not found with this email', 404)
     try {
-        const token = await user.createPasswordResetToken();  
+        const token = await user.createPasswordResetToken();
         const ResetUrl = `<p>Hey, ${user.firstname} how are you :-)</p> Please follow this link to reset your Password. This Link will valid for next 10 minutes.
          <a href='${process.env.BACKEND_HOST}/api/users/resetpassword/${token}'>Click Here</a>`
 
@@ -656,7 +656,7 @@ const sendTextMessage = async (mobile: string, otp: string) => {
     }
 
 };
-export const SendOtpViaSms =async (req: Request, res: Response) => {
+export const SendOtpViaSms = async (req: Request, res: Response) => {
     const mobile = req.body?.mobile
     otp = Math.round(Math.random() * 1000000).toString();
     try {
@@ -664,13 +664,13 @@ export const SendOtpViaSms =async (req: Request, res: Response) => {
             { mobile },
             { mobile, otp },
             { upsert: true, new: true }
-          );
-          // const msg = sendTextMessage(mobile, otp)
-          res.status(200).json({
+        );
+        // const msg = sendTextMessage(mobile, otp)
+        res.status(200).json({
             user,
             success: true,
             message: `Verification code sent to ${mobile} `,
-          });
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: `Incorrect Number or Invalid Number.` });
 
@@ -682,7 +682,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const curOTP = req.body?.otp;
     const mobile = req.body?.mobile;
     const enterOtp = curOTP.toString().replaceAll(",", "");
-  
+
     const user = await User.findOne({ mobile });
     const time = user?.updatedAt?.getTime();
     const currentTime = new Date().getTime();
@@ -690,35 +690,35 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const isValid = time ? currentTime - time : 13;
     try {
         if (
-          user &&
-          user.otp == enterOtp &&
-          time &&
-          isValid <= otpValidityDuration
+            user &&
+            user.otp == enterOtp &&
+            time &&
+            isValid <= otpValidityDuration
         ) {
-          // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
-          const token = await user.generateAuthToken();
-          const options = {
-            maxAge: 24 * 60 * 60 * 1000,
-            secure: false,
-            httpOnly: true,
-          };
-          res
-            .status(201)
-            .cookie("loginToken", token, options)
-            .json({ user, success: true, message: "user logged in sucessfully." });
+            // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
+            const token = await user.generateAuthToken();
+            const options = {
+                maxAge: 24 * 60 * 60 * 1000,
+                secure: false,
+                httpOnly: true,
+            };
+            res
+                .status(201)
+                .cookie("loginToken", token, options)
+                .json({ user, success: true, message: "user logged in sucessfully." });
         } else {
-          res
-            .status(403)
-            .json({ success: false, message: "otp incorrect or timeout." });
+            res
+                .status(403)
+                .json({ success: false, message: "otp incorrect or timeout." });
         }
-      } catch (error: any) {
+    } catch (error: any) {
         throw new Error(error);
-      }
+    }
 }
 
 
 // const emailQueue = new Queue('emailQueue')
-// producer and to complete this added task you need worker. 
+// producer and to complete this added task you need worker.
 // export const sendEmailToUsers = async (req: Request, res: Response) => {
 //     try {
 //         // const users = await User.find({})

@@ -118,7 +118,7 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
           .json({ message: "this page doesnot exist", statusCode: 404 });
       }
     }
-    const products = await query.populate(["category", "brand", "color"]);
+    const products = await query.populate(["category", "brand", "color"]);    
     return res.json(products);
   } catch (error) {
     throw new FancyError("cannot be able to fetch products", 400);
@@ -237,7 +237,7 @@ export const deleteImages = asyncHandler(async (req, res) => {
 });
 
 export const createCheckoutSession = asyncHandler(async (req, res) => {
-  const products = req.body;  
+  const products = req.body;
   try {
     const line_items = products?.cartItems?.map((product: any) => ({
       price_data: {

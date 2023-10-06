@@ -38,7 +38,7 @@ export interface Options {
     optionSuccessStatus: number
 }
 const options: Options = {
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5154'],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
@@ -47,7 +47,7 @@ app.use(cors(options));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'))
-app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
+// app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
 
 // controllers
 app.get('/', (req, res) => {
