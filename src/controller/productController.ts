@@ -2,14 +2,21 @@ import asyncHandler from "express-async-handler";
 import slugify from "slugify";
 import fs from "fs";
 import Stripe from "stripe";
+import Razorpay from "razorpay";
 
 import Product, { IProduct } from "../models/ProductModel.js";
 import FancyError from "../utils/FancyError.js";
 import User, { IUser } from "../models/UserModel.js";
 import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
+import { upload } from "../utils/Amazon_s3.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2023-08-16",
+});
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_TEST as string,
+  key_secret: process.env.RAZORPAY_SECRET as string,
 });
 
 export const createProduct = asyncHandler(async (req, res) => {
@@ -81,6 +88,7 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
   try {
     // filtering
     const queryObj = { ...req.query };
+
     const excludeFields = ["page", "sort", "limit", "fields"];
     excludeFields.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
@@ -237,7 +245,7 @@ export const deleteImages = asyncHandler(async (req, res) => {
 });
 
 export const createCheckoutSession = asyncHandler(async (req, res) => {
-  const products = req.body;  
+  const products = req.body;
   try {
     const line_items = products?.cartItems?.map((product: any) => ({
       price_data: {
@@ -263,3 +271,35 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
     throw new FancyError("Payment Failed, due to technical issue", 400);
   }
 });
+
+export const createRaziropayOrder = asyncHandler(async (req, res) => {
+  const prod = req.body;
+  const options = {
+    amount: req.body?.cartTotalAmount * 100,
+    currency: "INR",
+    receipt: "order_reciept_id"
+  }
+  try {
+    razorpay.orders.create(options, function (err, order) {
+      if (err) {
+        console.log(err);
+      }
+      res.status(200).json({ orderId: order.id })
+    })
+  } catch (error: any) {
+    res.status(400).json({ msg: 'Unable to create order, Try again after some time.' })
+  }
+
+});
+
+export const uploadFilesToS3 = asyncHandler(async (req, res) => {
+  const files = req.files as Express.Multer.File[];
+  const urls = []
+  for (const file of files) {
+    const result = await upload(file)
+    urls.push({ url: result })
+  }
+
+  res.json({ urls })
+})
+

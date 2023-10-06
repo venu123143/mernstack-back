@@ -11,12 +11,18 @@ import asyncHandler from "express-async-handler";
 import slugify from "slugify";
 import fs from "fs";
 import Stripe from "stripe";
+import Razorpay from "razorpay";
 import Product from "../models/ProductModel.js";
 import FancyError from "../utils/FancyError.js";
 import User from "../models/UserModel.js";
 import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
+import { upload } from "../utils/Amazon_s3.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-08-16",
+});
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_TEST,
+    key_secret: process.env.RAZORPAY_SECRET,
 });
 export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -234,4 +240,33 @@ export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0
     catch (error) {
         throw new FancyError("Payment Failed, due to technical issue", 400);
     }
+}));
+export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const prod = req.body;
+    const options = {
+        amount: ((_d = req.body) === null || _d === void 0 ? void 0 : _d.cartTotalAmount) * 100,
+        currency: "INR",
+        receipt: "order_reciept_id"
+    };
+    try {
+        razorpay.orders.create(options, function (err, order) {
+            if (err) {
+                console.log(err);
+            }
+            res.status(200).json({ orderId: order.id });
+        });
+    }
+    catch (error) {
+        res.status(400).json({ msg: 'Unable to create order, Try again after some time.' });
+    }
+}));
+export const uploadFilesToS3 = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const files = req.files;
+    const urls = [];
+    for (const file of files) {
+        const result = yield upload(file);
+        urls.push({ url: result });
+    }
+    res.json({ urls });
 }));

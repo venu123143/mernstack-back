@@ -12,7 +12,7 @@ import FancyError from '../utils/FancyError.js';
 
 const multerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../public/images'))
+        cb(null, path.join(__dirname, '../public/uploads'))
     },
     filename: function (req, file, cb) {
         const uniqueSufix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -32,7 +32,7 @@ const multerFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCal
 export const productImgResize = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.files) return next();
     const files = req.files as Express.Multer.File[];
-    
+
     await Promise.all(files.map(async (file: Request["file"]) => {
         await sharp(file?.path)
             .resize(300, 300)
@@ -45,7 +45,7 @@ export const productImgResize = async (req: Request, res: Response, next: NextFu
 }
 export const blogImgResize = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.files) return next();
- 
+
     const files = req.files as Express.Multer.File[];
 
     await Promise.all(files.map(async (file: Request["file"]) => {
@@ -62,5 +62,5 @@ export const blogImgResize = async (req: Request, res: Response, next: NextFunct
 export const uploadPhoto = multer({
     storage: multerStorage,
     fileFilter: multerFilter,
-    limits: { fieldSize: 6 * 1000 * 1000 }
+    limits: { fieldSize: 8 * 1000 * 1000 }
 })

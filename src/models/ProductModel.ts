@@ -15,6 +15,7 @@ export interface IProduct {
     sold?: number;
     images?: string[];
     color: string[];
+    seller: Types.ObjectId;
     ratings?: Rating[];
     totalRating: number;
     createdAt?: Date;
@@ -72,6 +73,10 @@ var productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Color"
     }],
+    seller: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     ratings: [{
         star: Number,
         comment: String,

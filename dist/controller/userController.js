@@ -267,15 +267,15 @@ export const addToCart = asyncHandler((req, res) => __awaiter(void 0, void 0, vo
     try {
         let cart = yield Cart.findOne({ orderBy: _id });
         let prod = yield Product.findById(prodId);
-        if (!prod && (prod === null || prod === void 0 ? void 0 : prod.quantity) < 1) {
+        if (!prod || (prod === null || prod === void 0 ? void 0 : prod.quantity) < 1) {
             return res.status(404).json({ message: "No Product or Product not available currently..." });
         }
         if (!cart) {
             cart = new Cart();
         }
         const basicAmount = 199;
-        let deliveryCharge = cart.total < basicAmount ? 30 : 0;
-        let tip = tipAmount ? tipAmount : 0;
+        let deliveryCharge = cart.total <= basicAmount ? 30 : 0;
+        let tip = tipAmount > 0 ? tipAmount : 0;
         const handlingCharge = 2;
         let cartTotal = deliveryCharge + tip + handlingCharge + cart.total + prod.price;
         let total = cart.total + prod.price;
@@ -295,6 +295,7 @@ export const addToCart = asyncHandler((req, res) => __awaiter(void 0, void 0, vo
             cart.cartTotal = cartTotal;
             cart.deliveryCharge = deliveryCharge;
             cart.handlingCharge = handlingCharge;
+            cart.tip = tip;
             cart.products.push({ _id: prodId, count: 1, color: color });
         }
         yield cart.save();

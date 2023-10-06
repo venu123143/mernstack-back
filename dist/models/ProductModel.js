@@ -43,6 +43,10 @@ var productSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Color"
         }],
+    seller: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     ratings: [{
             star: Number,
             comment: String,

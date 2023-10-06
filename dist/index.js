@@ -28,6 +28,8 @@ const options = {
 };
 app.use(cors(options));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('./dist/public/images'));
 app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY }));
