@@ -87,15 +87,8 @@ export const logout = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
     if (!cookies.loginToken) {
         throw new FancyError('no refresh token in cookies', 404);
     }
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-        }
-        res.send('Logged out successfully');
-    });
     yield User.findOneAndUpdate({ refreshToken: cookies === null || cookies === void 0 ? void 0 : cookies.loginToken }, { refreshToken: "" });
-    res.clearCookie(cookies === null || cookies === void 0 ? void 0 : cookies.loginToken).status(204)
-        .json({ message: 'user logged out sucessfully', sucess: true });
+    res.clearCookie('loginToken', { path: '/' }).json({ message: 'user logged out successfully', success: true });
 }));
 export const getAllUsers = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -460,10 +453,10 @@ export const applyCoupon = asyncHandler((req, res) => __awaiter(void 0, void 0, 
     res.json(cart);
 }));
 export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { COD, couponApplied } = req.body;
+    const { paymentMethod, couponApplied } = req.body;
     const { _id } = req.user;
-    if (!COD)
-        throw new FancyError("Create Cash Order Failed", 500);
+    if (!paymentMethod)
+        throw new FancyError("Create Order Failed", 500);
     try {
         const user = yield User.findById(_id);
         const userCart = yield Cart.findOne({ orderBy: user === null || user === void 0 ? void 0 : user._id });
@@ -478,15 +471,14 @@ export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
             const newOrder = yield new Order({
                 products: userCart === null || userCart === void 0 ? void 0 : userCart.products,
                 paymentIntent: {
-                    order_id: uniqueId("ORD"),
-                    method: "COD",
+                    order_id: uniqueId("ORD_"),
+                    method: paymentMethod,
                     amount: finalAmount,
-                    status: "Cash On Delivery",
                     created: Date.now(),
                     currency: "USD",
                 },
                 orderBy: user === null || user === void 0 ? void 0 : user._id,
-                paymentMethod: "Cash on Delivery",
+                paymentMethod: paymentMethod,
             }).save();
             for (const item of userCart.products) {
                 yield Product.updateOne({ _id: item === null || item === void 0 ? void 0 : item._id }, { $inc: { quantity: -item.count, sold: item.count } });
@@ -505,7 +497,7 @@ export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
 export const getOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     try {
-        const userOrders = yield Order.findOne({ orderBy: _id }).populate("products");
+        const userOrders = yield Order.find({ orderBy: _id }).populate(["products", "orderBy"]);
         res.json(userOrders);
     }
     catch (error) {
@@ -528,17 +520,27 @@ export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, vo
     if (["delivered", "order sucessful", "delevered", "order completed", "order delivered"].includes(Status.toLowerCase())) {
         orderStatus = "Delivered";
     }
+    if (["Returned", "returned", "Returned", "return", "retrn"].includes(Status.toLowerCase())) {
+        orderStatus = "Returned";
+    }
     try {
         const findOrder = yield Order.findByIdAndUpdate(id, {
             orderStatus: orderStatus,
-            paymentIntent: {
-                status: Status
-            },
         }, { new: true });
         res.json(findOrder);
     }
     catch (error) {
         throw new FancyError("not able to update status", 400);
+    }
+}));
+export const deleteOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const findOrder = yield Order.findByIdAndDelete(id, { new: true });
+        res.json(findOrder);
+    }
+    catch (error) {
+        throw new FancyError("not able to delete Order", 400);
     }
 }));
 export const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

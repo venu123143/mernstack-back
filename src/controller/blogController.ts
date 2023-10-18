@@ -4,15 +4,27 @@ import Blog from "../models/BlogModel.js"
 import { IUser } from "../models/UserModel.js"
 import asyncHandler from "express-async-handler"
 import FancyError from "../utils/FancyError.js"
-import {uploadImage} from "../utils/Cloudinary.js"
+import { uploadImage } from "../utils/Cloudinary.js"
 // import { validateMogodbId } from "../utils/validateMongodbId.js"
 
 
 
 export const createBlog = asyncHandler(async (req, res) => {
+    const { title, description, category } = req.body;
     try {
-        const newBlog = await Blog.create(req.body);
-        res.json({ newBlog, sucess: true })
+        const uploader = (path: string) => uploadImage(path);
+        const urls = [];
+        const files = req.files as Express.Multer.File[];
+        for (const file of files) {
+            const { path } = file;
+            const newpath = await uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+        if (req.user) {
+            const newBlog = await Blog.create({ title, description, category, auther: req?.user?._id, images: urls });
+            res.json({ newBlog })
+        }
     } catch (error) {
         console.log(error);
         throw new FancyError("Cannot be able to create a blog, Give all mandetory fields", 401)
@@ -22,7 +34,18 @@ export const createBlog = asyncHandler(async (req, res) => {
 export const updateBlog = asyncHandler(async (req, res) => {
     const { id } = req.params
     try {
-        const updatedBlog = await Blog.findByIdAndUpdate(id, req.body, { new: true });
+        const uploader = (path: string) => uploadImage(path);
+        const urls = [];
+        const files = req.files as Express.Multer.File[];
+        for (const file of files) {
+            const { path } = file;
+            const newpath = await uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+        const { title, description, category } = req.body
+
+        const updatedBlog = await Blog.findByIdAndUpdate(id, { title, description, category, images: urls }, { new: true });
         if (updateBlog === null) {
             res.json({ message: "no blog present with this id", statusCode: 404 })
         } else res.json({ updatedBlog, sucess: true })
@@ -48,7 +71,7 @@ export const getBlog = asyncHandler(async (req, res) => {
 
 export const getAllBlogs = asyncHandler(async (req, res) => {
     try {
-        const blogs = await Blog.find()
+        const blogs = await Blog.find().populate(["category", "auther"])
         res.json(blogs)
     } catch (error) {
         throw new FancyError("cannot fetch the blogs", 400)

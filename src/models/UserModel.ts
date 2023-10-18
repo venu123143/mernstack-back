@@ -99,11 +99,7 @@ userSchema.pre("save", async function (next) {
 // we are generating token
 userSchema.methods.generateAuthToken = async function () {
   try {
-    let cur_token = jwt.sign(
-      { _id: this._id },
-      process.env.SECRET_KEY as jwt.Secret,
-      { expiresIn: "1d" }
-    );
+    let cur_token = jwt.sign({ _id: this._id }, process.env.SECRET_KEY as jwt.Secret, { expiresIn: "1d" });
     this.refreshToken = cur_token;
     await this.save();
 

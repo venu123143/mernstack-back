@@ -4,14 +4,14 @@ export interface IBlog extends Document {
     _id: Types.ObjectId;
     title: string;
     description: string;
-    category: string;
+    category: Types.ObjectId;
     numViews: number;
     isLiked: boolean;
     isDisliked: boolean;
     likes: Schema.Types.ObjectId[];
     dislikes: Schema.Types.ObjectId[];
     image: string;
-    auther: string;
+    auther: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -28,9 +28,8 @@ var blogSchema = new mongoose.Schema({
         unique: false,
     },
     category: {
-        type: String,
-        required: true,
-        unique: false,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BlogCategory'
     },
     numViews: {
         type: Number,
@@ -57,14 +56,14 @@ var blogSchema = new mongoose.Schema({
         default: "https://images.pexels.com/photos/262508/pexels-photo-262508.jpeg"
     },
     auther: {
-        type: String,
-        default: "Admin"
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
     images: {
         type: Array
     }
 
-}, { timeStamps: true, collection: 'blogs' })
+}, { timestamps: true, collection: 'blogs' })
 
 //Export the model
 export default mongoose.model<IBlog>('Blog', blogSchema);

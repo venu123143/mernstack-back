@@ -12,8 +12,7 @@ const jwtToken = (user, statusCode, res) => __awaiter(void 0, void 0, void 0, fu
     if (token !== undefined) {
         const options = {
             maxAge: 24 * 60 * 60 * 1000,
-            secure: false,
-            httpOnly: false,
+            httpOnly: true,
         };
         res.status(statusCode).cookie('loginToken', token, options).json({
             user,

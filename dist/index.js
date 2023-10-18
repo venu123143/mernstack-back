@@ -20,7 +20,7 @@ import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
 import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5154'],
+    origin: ['https://amazonadmin-app.netlify.app/', 'http://localhost:5173', 'http://localhost:5174', "https://amazonadmin-app.netlify.app/"],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
@@ -28,8 +28,8 @@ const options = {
 app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('./dist/public/images'));
 app.use(cookieParser());
+app.use(express.static('./dist/public/images'));
 app.use(morgan('dev'));
 app.get('/', (req, res) => {
     res.send('backend home route sucessful');

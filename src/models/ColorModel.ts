@@ -7,7 +7,8 @@ var colorSchema = new mongoose.Schema({
         required: true,
         unique: true,
         index: true,
-        // lowercase:true
+        uppercase: true,
+        
     }
 }, { timestamps: true, collection: 'color' })
 

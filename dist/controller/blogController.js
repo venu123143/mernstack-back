@@ -13,9 +13,22 @@ import asyncHandler from "express-async-handler";
 import FancyError from "../utils/FancyError.js";
 import { uploadImage } from "../utils/Cloudinary.js";
 export const createBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { title, description, category } = req.body;
     try {
-        const newBlog = yield Blog.create(req.body);
-        res.json({ newBlog, sucess: true });
+        const uploader = (path) => uploadImage(path);
+        const urls = [];
+        const files = req.files;
+        for (const file of files) {
+            const { path } = file;
+            const newpath = yield uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+        if (req.user) {
+            const newBlog = yield Blog.create({ title, description, category, auther: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a._id, images: urls });
+            res.json({ newBlog });
+        }
     }
     catch (error) {
         console.log(error);
@@ -25,7 +38,17 @@ export const createBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, v
 export const updateBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const updatedBlog = yield Blog.findByIdAndUpdate(id, req.body, { new: true });
+        const uploader = (path) => uploadImage(path);
+        const urls = [];
+        const files = req.files;
+        for (const file of files) {
+            const { path } = file;
+            const newpath = yield uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+        const { title, description, category } = req.body;
+        const updatedBlog = yield Blog.findByIdAndUpdate(id, { title, description, category, images: urls }, { new: true });
         if (updateBlog === null) {
             res.json({ message: "no blog present with this id", statusCode: 404 });
         }
@@ -53,7 +76,7 @@ export const getBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void
 }));
 export const getAllBlogs = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const blogs = yield Blog.find();
+        const blogs = yield Blog.find().populate(["category", "auther"]);
         res.json(blogs);
     }
     catch (error) {

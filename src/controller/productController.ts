@@ -20,32 +20,93 @@ const razorpay = new Razorpay({
 });
 
 export const createProduct = asyncHandler(async (req, res) => {
+  const { title, description, category, brand } = req.body
+  const formData = req.body;
+  formData.quantity = JSON.parse(formData.quantity);
+  formData.price = JSON.parse(formData.price);
+
+  formData.color = JSON.parse(formData.color);
+  formData.tags = JSON.parse(formData.tags);
+
   try {
+
+    const uploader = (path: string) => uploadImage(path);
+    const urls = [];
+    const files = req.files as Express.Multer.File[];
+    for (const file of files) {
+      const { path } = file;
+      const newpath = await uploader(path);
+      urls.push(newpath);
+      fs.unlinkSync(path);
+    }
     if (req.body.title) {
       req.body.slug = slugify.default(req.body.title);
     }
-    const product = await Product.create(req.body);
-    res.json(product);
+    if (req.user) {
+      const product = await Product.create({
+        title, description,
+        images: urls,
+        category, brand,
+        seller: req.user._id,
+        slug: req.body.slug,
+        price: formData.price,
+        tags: formData.tags,
+        quantity: formData.quantity,
+        color: formData.color
+      });
+      res.json(product);
+    }
   } catch (error) {
     console.log(error);
-
-    throw new FancyError(
-      " can't be able to create product, enter all required fields..!",
-      400
-    );
+    throw new FancyError(" can't be able to create product, enter all required fields..!", 400);
   }
 });
 export const updateProduct = asyncHandler(async (req, res) => {
-  const { id } = req.params;
   try {
+    const uploader = (path: string) => uploadImage(path);
+    let urls = [];
+    const files = req.files as Express.Multer.File[];
+    for (const file of files) {
+      const { path } = file;
+      const newpath = await uploader(path);
+      urls.push(newpath);
+      fs.unlinkSync(path);
+    }
     if (req.body.title) {
       req.body.slug = slugify.default(req.body.title);
     }
-    const updateProd = await Product.findOneAndUpdate({ _id: id }, req.body, {
-      new: true,
-    }).populate(["category", "brand", "color"]);
-    res.json(updateProd);
+    const { title, description, category, brand } = req.body
+
+    const formData = req.body;
+    formData.quantity = JSON.parse(formData.quantity);
+    formData.price = JSON.parse(formData.price);
+    formData.color = JSON.parse(formData.color);
+    formData.tags = JSON.parse(formData.tags);
+    formData.existingImg = formData?.existingImg?.map((item: any) => JSON.parse(item));
+    if (formData?.existingImg.length !== 0) {
+      urls.push(...formData.existingImg)
+    }
+    console.log(urls);
+    const { id } = req.params;
+    if (req.user) {
+      const updateProd = await Product.findOneAndUpdate({ _id: id },
+        {
+          title, description,
+          category, brand,
+          slug: req.body.slug,
+          price: formData.price,
+          tags: formData.tags,
+          quantity: formData.quantity,
+          color: formData.color,
+          images: urls
+        }, {
+        new: true,
+      }).populate(["category", "brand", "color"]);
+      res.json(updateProd);
+    }
   } catch (error) {
+    console.log(error);
+
     throw new FancyError(" can't be able to update product, Try Again..!", 400);
   }
 });
@@ -93,9 +154,9 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
     excludeFields.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    var query = Product.find(JSON.parse(queryStr));
+    var query = Product.find(JSON.parse(queryStr))
 
-    // sorting
+    // sorting,ejs, sorting ejs
     if (req.query.sort) {
       var s = req.query.sort as string;
       const sortBy = s.split(",").join(" ");
@@ -126,7 +187,8 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
           .json({ message: "this page doesnot exist", statusCode: 404 });
       }
     }
-    const products = await query.populate(["category", "brand", "color"]);    
+    const products = await query.populate(["category", "brand", "color"]);
+
     return res.json(products);
   } catch (error) {
     throw new FancyError("cannot be able to fetch products", 400);
@@ -213,6 +275,7 @@ export const rating = asyncHandler(async (req, res) => {
 
 export const uploadImages = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
   try {
     const uploader = (path: string) => uploadImage(path);
     const urls = [];
@@ -282,7 +345,6 @@ export const createRaziropayOrder = asyncHandler(async (req, res) => {
   try {
     razorpay.orders.create(options, function (err, order) {
       if (err) {
-        console.log(err);
       }
       res.status(200).json({ orderId: order.id })
     })

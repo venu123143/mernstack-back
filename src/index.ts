@@ -35,8 +35,9 @@ export interface Options {
     withCredentials: boolean,
     optionSuccessStatus: number
 }
+
 const options: Options = {
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5154'],
+    origin: ['https://amazonadmin-app.netlify.app/', 'http://localhost:5173', 'http://localhost:5174',"https://amazonadmin-app.netlify.app/"],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
@@ -44,10 +45,10 @@ const options: Options = {
 app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('./dist/public/images'));
 app.use(cookieParser());
+app.use(express.static('./dist/public/images'));
 app.use(morgan('dev'))
-app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
+// app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
 
 // controllers
 app.get('/', (req, res) => {

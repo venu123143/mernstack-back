@@ -25,12 +25,39 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_SECRET,
 });
 export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, description, category, brand } = req.body;
+    const formData = req.body;
+    formData.quantity = JSON.parse(formData.quantity);
+    formData.price = JSON.parse(formData.price);
+    formData.color = JSON.parse(formData.color);
+    formData.tags = JSON.parse(formData.tags);
     try {
+        const uploader = (path) => uploadImage(path);
+        const urls = [];
+        const files = req.files;
+        for (const file of files) {
+            const { path } = file;
+            const newpath = yield uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title);
         }
-        const product = yield Product.create(req.body);
-        res.json(product);
+        if (req.user) {
+            const product = yield Product.create({
+                title, description,
+                images: urls,
+                category, brand,
+                seller: req.user._id,
+                slug: req.body.slug,
+                price: formData.price,
+                tags: formData.tags,
+                quantity: formData.quantity,
+                color: formData.color
+            });
+            res.json(product);
+        }
     }
     catch (error) {
         console.log(error);
@@ -38,17 +65,50 @@ export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
     }
 }));
 export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
+    var _a;
     try {
+        const uploader = (path) => uploadImage(path);
+        let urls = [];
+        const files = req.files;
+        for (const file of files) {
+            const { path } = file;
+            const newpath = yield uploader(path);
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title);
         }
-        const updateProd = yield Product.findOneAndUpdate({ _id: id }, req.body, {
-            new: true,
-        }).populate(["category", "brand", "color"]);
-        res.json(updateProd);
+        const { title, description, category, brand } = req.body;
+        const formData = req.body;
+        formData.quantity = JSON.parse(formData.quantity);
+        formData.price = JSON.parse(formData.price);
+        formData.color = JSON.parse(formData.color);
+        formData.tags = JSON.parse(formData.tags);
+        formData.existingImg = (_a = formData === null || formData === void 0 ? void 0 : formData.existingImg) === null || _a === void 0 ? void 0 : _a.map((item) => JSON.parse(item));
+        if ((formData === null || formData === void 0 ? void 0 : formData.existingImg.length) !== 0) {
+            urls.push(...formData.existingImg);
+        }
+        console.log(urls);
+        const { id } = req.params;
+        if (req.user) {
+            const updateProd = yield Product.findOneAndUpdate({ _id: id }, {
+                title, description,
+                category, brand,
+                slug: req.body.slug,
+                price: formData.price,
+                tags: formData.tags,
+                quantity: formData.quantity,
+                color: formData.color,
+                images: urls
+            }, {
+                new: true,
+            }).populate(["category", "brand", "color"]);
+            res.json(updateProd);
+        }
     }
     catch (error) {
+        console.log(error);
         throw new FancyError(" can't be able to update product, Try Again..!", 400);
     }
 }));
@@ -155,12 +215,12 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
     }
 }));
 export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _b, _c;
     const { _id } = req.user;
     const { star, prodId, comment } = req.body;
     try {
         const product = yield Product.findById(prodId);
-        let alreadyRated = (_a = product === null || product === void 0 ? void 0 : product.ratings) === null || _a === void 0 ? void 0 : _a.find((rating) => rating.postedBy.toString() === _id.toString());
+        let alreadyRated = (_b = product === null || product === void 0 ? void 0 : product.ratings) === null || _b === void 0 ? void 0 : _b.find((rating) => rating.postedBy.toString() === _id.toString());
         if (alreadyRated) {
             const updateRating = yield Product.updateOne({ ratings: { $elemMatch: alreadyRated } }, { $set: { "ratings.$.star": star, "ratings.$.comment": comment } }, { news: true });
         }
@@ -170,7 +230,7 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
             }, { new: true });
         }
         const AllRatings = yield Product.findById(prodId);
-        let totalRatings = (_b = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _b === void 0 ? void 0 : _b.length;
+        let totalRatings = (_c = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _c === void 0 ? void 0 : _c.length;
         if ((AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) !== undefined && totalRatings !== undefined) {
             let ratingSum = AllRatings.ratings
                 .map((item) => item.star)
@@ -214,10 +274,10 @@ export const deleteImages = asyncHandler((req, res) => __awaiter(void 0, void 0,
     }
 }));
 export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _d;
     const products = req.body;
     try {
-        const line_items = (_c = products === null || products === void 0 ? void 0 : products.cartItems) === null || _c === void 0 ? void 0 : _c.map((product) => ({
+        const line_items = (_d = products === null || products === void 0 ? void 0 : products.cartItems) === null || _d === void 0 ? void 0 : _d.map((product) => ({
             price_data: {
                 currency: "inr",
                 product_data: {
@@ -242,17 +302,16 @@ export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0
     }
 }));
 export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _e;
     const prod = req.body;
     const options = {
-        amount: ((_d = req.body) === null || _d === void 0 ? void 0 : _d.cartTotalAmount) * 100,
+        amount: ((_e = req.body) === null || _e === void 0 ? void 0 : _e.cartTotalAmount) * 100,
         currency: "INR",
         receipt: "order_reciept_id"
     };
     try {
         razorpay.orders.create(options, function (err, order) {
             if (err) {
-                console.log(err);
             }
             res.status(200).json({ orderId: order.id });
         });

@@ -5,6 +5,7 @@ var blogcategorySchema = new mongoose.Schema({
         required: true,
         unique: true,
         index: true,
+        uppercase: true,
     }
 }, { timestamps: true, collection: 'blogcategory' });
 export default mongoose.model('BlogCategory', blogcategorySchema);

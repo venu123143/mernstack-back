@@ -16,7 +16,7 @@ import {
 const router = express.Router();
 
 
-router.post('/', authMiddleware, isAdmin, createProduct)
+router.post('/', authMiddleware, isAdmin, uploadPhoto.array('images', 10), createProduct)
 router.post('/create-checkout-session', createCheckoutSession)
 router.post('/create-raziropay-session', createRaziropayOrder)
 router.put('/upload/:id', authMiddleware, isAdmin,
@@ -26,7 +26,7 @@ router.post('/upload-to-s3', uploadPhoto.array('images', 10), uploadFilesToS3)
 router.get('/:id', getProduct);
 router.put('/wishlist', authMiddleware, addToWishlist)
 router.put('/rating', authMiddleware, rating)
-router.put('/:id', authMiddleware, isAdmin, updateProduct);
+router.put('/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), updateProduct);
 router.delete('/:id', authMiddleware, isAdmin, deleteProduct);
 router.delete('/delete-img/:id', authMiddleware, isAdmin, deleteImages);
 router.get('/', getAllProducts)

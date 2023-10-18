@@ -12,26 +12,17 @@ import asyncHandler from "express-async-handler";
 import User from "../models/UserModel.js";
 import FancyError from "../utils/FancyError.js";
 export const authMiddleware = asyncHandler((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    let token;
-    if ((_b = (_a = req === null || req === void 0 ? void 0 : req.headers) === null || _a === void 0 ? void 0 : _a.authorization) === null || _b === void 0 ? void 0 : _b.startsWith("Bearer")) {
-        token = req.headers.authorization.split(" ")[1];
-        try {
-            if (token) {
-                const decode = jwt.verify(token, process.env.SECRET_KEY);
-                const user = yield User.findById(decode._id);
-                if (user !== null) {
-                    req.user = user;
-                }
-                next();
-            }
-        }
-        catch (error) {
-            throw new FancyError('not Authorized token expired, please login again', 401);
+    const { loginToken } = req.cookies;
+    try {
+        const decode = jwt.verify(loginToken, process.env.SECRET_KEY);
+        const user = yield User.findById(decode._id);
+        if (user !== null) {
+            req.user = user;
+            next();
         }
     }
-    else {
-        throw new FancyError('No token attached to the header', 404);
+    catch (error) {
+        throw new FancyError('not Authorized..!, please login again', 401);
     }
 }));
 export const isAdmin = asyncHandler((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

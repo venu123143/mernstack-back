@@ -2,7 +2,7 @@ import Twilio from 'twilio';
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
-import { validationResult } from "express-validator"
+import { cookie, validationResult } from "express-validator"
 import session from 'express-session'
 import uniqueId from "uniqid"
 import { Queue } from "bullmq"
@@ -98,19 +98,16 @@ export const handleRefreshToken = asyncHandler(async (req, res) => {
 // logout
 export const logout = asyncHandler(async (req, res) => {
     const cookies = req.cookies
+
     if (!cookies.loginToken) {
         throw new FancyError('no refresh token in cookies', 404)
     }
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-        }
-        res.send('Logged out successfully');
-    });
 
     await User.findOneAndUpdate({ refreshToken: cookies?.loginToken }, { refreshToken: "" })
-    res.clearCookie(cookies?.loginToken).status(204)
-        .json({ message: 'user logged out sucessfully', sucess: true })
+    res.clearCookie('loginToken', { path: '/' }).json({ message: 'user logged out successfully', success: true });
+
+
+
 })
 
 export const getAllUsers = asyncHandler(async (req, res) => {
@@ -509,9 +506,9 @@ export const applyCoupon = asyncHandler(async (req, res) => {
 })
 
 export const createOrder = asyncHandler(async (req, res) => {
-    const { COD, couponApplied } = req.body
+    const { paymentMethod, couponApplied } = req.body
     const { _id } = req.user as IUser
-    if (!COD) throw new FancyError("Create Cash Order Failed", 500)
+    if (!paymentMethod) throw new FancyError("Create Order Failed", 500)
     try {
         const user = await User.findById(_id)
         const userCart = await Cart.findOne({ orderBy: user?._id })
@@ -527,15 +524,14 @@ export const createOrder = asyncHandler(async (req, res) => {
             const newOrder = await new Order({
                 products: userCart?.products,
                 paymentIntent: {
-                    order_id: uniqueId("ORD"),
-                    method: "COD",
+                    order_id: uniqueId("ORD_"),
+                    method: paymentMethod,
                     amount: finalAmount,
-                    status: "Cash On Delivery",
                     created: Date.now(),
                     currency: "USD",
                 },
                 orderBy: user?._id,
-                paymentMethod: "Cash on Delivery",
+                paymentMethod: paymentMethod,
 
             }).save()
             for (const item of userCart.products) {
@@ -554,10 +550,11 @@ export const createOrder = asyncHandler(async (req, res) => {
         throw new FancyError(error, 500)
     }
 })
+
 export const getOrders = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser
     try {
-        const userOrders = await Order.findOne({ orderBy: _id }).populate("products")
+        const userOrders = await Order.find({ orderBy: _id }).populate(["products", "orderBy"])
         res.json(userOrders)
 
     } catch (error) {
@@ -582,15 +579,14 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     if (["delivered", "order sucessful", "delevered", "order completed", "order delivered"].includes(Status.toLowerCase())) {
         orderStatus = "Delivered";
     }
+    if (["Returned", "returned", "Returned", "return", "retrn"].includes(Status.toLowerCase())) {
+        orderStatus = "Returned";
+    }
 
     try {
         const findOrder = await Order.findByIdAndUpdate(id,
             {
                 orderStatus: orderStatus,
-                paymentIntent: {
-                    status: Status
-                },
-
             }, { new: true })
         res.json(findOrder)
     } catch (error) {
@@ -598,7 +594,16 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 
     }
 })
+export const deleteOrder = asyncHandler(async (req, res) => {
+    try {
+        const { id } = req.params
+        const findOrder = await Order.findByIdAndDelete(id, { new: true })
+        res.json(findOrder)
+    } catch (error) {
+        throw new FancyError("not able to delete Order", 400)
 
+    }
+})
 
 export const googleOauthHandler = async (req: Request, res: Response) => {
     // GET THE CODE FROM QS
