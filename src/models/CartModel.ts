@@ -3,7 +3,7 @@ import mongoose, { Document, Model, Schema, model } from 'mongoose';
 export interface ICartItem {
     _id: Schema.Types.ObjectId;
     count: number;
-    color: string;
+    color?: string;
     price?: number;
 }
 

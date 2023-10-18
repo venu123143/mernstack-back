@@ -15,8 +15,6 @@ process.on("uncaughtException", (err) => {
 import 'dotenv/config'
 import "./config/db.js"
 
-
-
 const app: Application = express();
 
 import ErrorHandler from "./middleware/Error.js"
@@ -45,9 +43,11 @@ const options: Options = {
 }
 app.use(cors(options));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('./dist/public/images'));
 app.use(cookieParser());
 app.use(morgan('dev'))
-// app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
+app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
 
 // controllers
 app.get('/', (req, res) => {

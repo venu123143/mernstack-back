@@ -18,7 +18,7 @@ import path from "path";
 import FancyError from '../utils/FancyError.js';
 const multerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../public/images'));
+        cb(null, path.join(__dirname, '../public/uploads'));
     },
     filename: function (req, file, cb) {
         const uniqueSufix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -64,5 +64,5 @@ export const blogImgResize = (req, res, next) => __awaiter(void 0, void 0, void 
 export const uploadPhoto = multer({
     storage: multerStorage,
     fileFilter: multerFilter,
-    limits: { fieldSize: 6 * 1000 * 1000 }
+    limits: { fieldSize: 8 * 1000 * 1000 }
 });

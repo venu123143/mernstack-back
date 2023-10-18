@@ -292,11 +292,12 @@ export const saveAddress = asyncHandler(async (req, res, next) => {
 export const addToCart = asyncHandler(async (req, res): Promise<any> => {
     const { _id } = req.user as IUser
     const { prodId, color, tipAmount } = req.body;
+
     try {
         let cart = await Cart.findOne({ orderBy: _id })
         let prod = await Product.findById(prodId) as any
 
-        if (!prod && prod?.quantity < 1) {
+        if (!prod || prod?.quantity < 1) {
             return res.status(404).json({ message: "No Product or Product not available currently..." })
         }
         if (!cart) {
@@ -304,8 +305,8 @@ export const addToCart = asyncHandler(async (req, res): Promise<any> => {
             cart = new Cart();
         }
         const basicAmount = 199
-        let deliveryCharge = cart.total < basicAmount ? 30 : 0
-        let tip = tipAmount ? tipAmount : 0
+        let deliveryCharge = cart.total <= basicAmount ? 30 : 0
+        let tip = tipAmount > 0 ? tipAmount : 0
         const handlingCharge = 2
         let cartTotal = deliveryCharge + tip + handlingCharge + cart.total + prod.price
         let total = cart.total + prod.price
@@ -330,6 +331,7 @@ export const addToCart = asyncHandler(async (req, res): Promise<any> => {
             cart.cartTotal = cartTotal
             cart.deliveryCharge = deliveryCharge
             cart.handlingCharge = handlingCharge
+            cart.tip = tip
             cart.products.push({ _id: prodId, count: 1, color: color });
         }
         await cart.save();
