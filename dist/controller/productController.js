@@ -60,12 +60,11 @@ export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
         }
     }
     catch (error) {
-        console.log(error);
         throw new FancyError(" can't be able to create product, enter all required fields..!", 400);
     }
 }));
 export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
         const uploader = (path) => uploadImage(path);
         let urls = [];
@@ -86,8 +85,9 @@ export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
         formData.color = JSON.parse(formData.color);
         formData.tags = JSON.parse(formData.tags);
         formData.existingImg = (_a = formData === null || formData === void 0 ? void 0 : formData.existingImg) === null || _a === void 0 ? void 0 : _a.map((item) => JSON.parse(item));
-        if ((formData === null || formData === void 0 ? void 0 : formData.existingImg.length) !== 0) {
-            urls.push(...formData.existingImg);
+        console.log(formData.existingImg);
+        if (((_b = formData === null || formData === void 0 ? void 0 : formData.existingImg) === null || _b === void 0 ? void 0 : _b.length) !== 0) {
+            urls.unshift(...formData.existingImg);
         }
         console.log(urls);
         const { id } = req.params;
@@ -108,7 +108,6 @@ export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
         }
     }
     catch (error) {
-        console.log(error);
         throw new FancyError(" can't be able to update product, Try Again..!", 400);
     }
 }));
@@ -185,7 +184,6 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
         return res.json(products);
     }
     catch (error) {
-        console.log(error);
         throw new FancyError("cannot be able to fetch products", 400);
     }
 }));
@@ -200,21 +198,13 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
         }
         if (alreadyAdded) {
             const user = yield User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } }, { new: true })
-                .populate('wishlist')
-                .populate('wishlist.brand')
-                .populate('wishlist.color')
-                .populate('wishlist.category')
-                .populate('wishlist.seller')
-                .exec();
+                .populate(['wishlist', 'wishlist.brand', 'wishlist.category', 'wishlist.seller']).exec();
             res.json(user);
         }
         else {
             const user = yield User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
-                .populate('wishlist.brand')
-                .populate('wishlist.color')
-                .populate('wishlist.category')
-                .populate('wishlist.seller')
-                .exec();
+                .populate(['wishlist', 'wishlist.brand', 'wishlist.category', 'wishlist.seller']).exec();
+            console.log(user);
             res.json(user);
         }
     }
@@ -224,12 +214,12 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
     }
 }));
 export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c;
+    var _c, _d;
     const { _id } = req.user;
     const { star, prodId, comment } = req.body;
     try {
         const product = yield Product.findById(prodId);
-        let alreadyRated = (_b = product === null || product === void 0 ? void 0 : product.ratings) === null || _b === void 0 ? void 0 : _b.find((rating) => rating.postedBy.toString() === _id.toString());
+        let alreadyRated = (_c = product === null || product === void 0 ? void 0 : product.ratings) === null || _c === void 0 ? void 0 : _c.find((rating) => rating.postedBy.toString() === _id.toString());
         if (alreadyRated) {
             const updateRating = yield Product.updateOne({ ratings: { $elemMatch: alreadyRated } }, { $set: { "ratings.$.star": star, "ratings.$.comment": comment } }, { news: true });
         }
@@ -239,7 +229,7 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
             }, { new: true });
         }
         const AllRatings = yield Product.findById(prodId);
-        let totalRatings = (_c = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _c === void 0 ? void 0 : _c.length;
+        let totalRatings = (_d = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _d === void 0 ? void 0 : _d.length;
         if ((AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) !== undefined && totalRatings !== undefined) {
             let ratingSum = AllRatings.ratings
                 .map((item) => item.star)
@@ -283,10 +273,10 @@ export const deleteImages = asyncHandler((req, res) => __awaiter(void 0, void 0,
     }
 }));
 export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _e;
     const products = req.body;
     try {
-        const line_items = (_d = products === null || products === void 0 ? void 0 : products.cartItems) === null || _d === void 0 ? void 0 : _d.map((product) => ({
+        const line_items = (_e = products === null || products === void 0 ? void 0 : products.cartItems) === null || _e === void 0 ? void 0 : _e.map((product) => ({
             price_data: {
                 currency: "inr",
                 product_data: {
@@ -311,10 +301,10 @@ export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0
     }
 }));
 export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _f;
     const prod = req.body;
     const options = {
-        amount: ((_e = req.body) === null || _e === void 0 ? void 0 : _e.cartTotalAmount) * 100,
+        amount: ((_f = req.body) === null || _f === void 0 ? void 0 : _f.cartTotalAmount) * 100,
         currency: "INR",
         receipt: "order_reciept_id"
     };

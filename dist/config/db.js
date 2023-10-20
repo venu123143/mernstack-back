@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const db = 'mongodb://127.0.0.1:27017/amazclone';
+const db = process.env.DATABASE;
 if (db !== undefined) {
     mongoose.connect(db)
         .then(() => console.log('connection sucessful'))

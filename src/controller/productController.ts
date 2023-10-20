@@ -57,7 +57,6 @@ export const createProduct = asyncHandler(async (req, res) => {
       res.json(product);
     }
   } catch (error) {
-    console.log(error);
     throw new FancyError(" can't be able to create product, enter all required fields..!", 400);
   }
 });
@@ -83,8 +82,10 @@ export const updateProduct = asyncHandler(async (req, res) => {
     formData.color = JSON.parse(formData.color);
     formData.tags = JSON.parse(formData.tags);
     formData.existingImg = formData?.existingImg?.map((item: any) => JSON.parse(item));
-    if (formData?.existingImg.length !== 0) {
-      urls.push(...formData.existingImg)
+    console.log(formData.existingImg);
+
+    if (formData?.existingImg?.length !== 0) {
+      urls.unshift(...formData.existingImg)
     }
     console.log(urls);
     const { id } = req.params;
@@ -105,7 +106,6 @@ export const updateProduct = asyncHandler(async (req, res) => {
       res.json(updateProd);
     }
   } catch (error) {
-    console.log(error);
 
     throw new FancyError(" can't be able to update product, Try Again..!", 400);
   }
@@ -191,7 +191,6 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
 
     return res.json(products);
   } catch (error) {
-    console.log(error);
 
     throw new FancyError("cannot be able to fetch products", 400);
   }
@@ -208,21 +207,14 @@ export const addToWishlist = asyncHandler(async (req, res) => {
     }
     if (alreadyAdded) {
       const user = await User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } }, { new: true })
-        .populate('wishlist')
-        .populate('wishlist.brand')
-        .populate('wishlist.color')
-        .populate('wishlist.category')
-        .populate('wishlist.seller')
-        .exec();
+      .populate(['wishlist', 'wishlist.brand', 'wishlist.category', 'wishlist.seller']).exec()
 
       res.json(user);
     } else {
       const user = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
-        .populate('wishlist.brand')
-        .populate('wishlist.color')
-        .populate('wishlist.category')
-        .populate('wishlist.seller')
-        .exec();
+        .populate(['wishlist', 'wishlist.brand', 'wishlist.category', 'wishlist.seller']).exec()
+      console.log(user);
+
       res.json(user);
     }
   } catch (error) {
