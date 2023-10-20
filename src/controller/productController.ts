@@ -129,6 +129,8 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
     const products = await query.populate(["category", "brand", "color"]);
     return res.json(products);
   } catch (error) {
+    console.log(error);
+
     throw new FancyError("cannot be able to fetch products", 400);
   }
 });

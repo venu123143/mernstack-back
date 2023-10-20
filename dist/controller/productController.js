@@ -125,6 +125,7 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
         return res.json(products);
     }
     catch (error) {
+        console.log(error);
         throw new FancyError("cannot be able to fetch products", 400);
     }
 }));
