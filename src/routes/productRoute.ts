@@ -24,7 +24,7 @@ router.put('/upload/:id', authMiddleware, isAdmin,
     productImgResize, uploadImages)
 router.post('/upload-to-s3', uploadPhoto.array('images', 10), uploadFilesToS3)
 router.get('/:id', getProduct);
-router.put('/wishlist', authMiddleware, addToWishlist)
+router.put('/wishlist', authMiddleware, addToWishlist) 
 router.put('/rating', authMiddleware, rating)
 router.put('/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), updateProduct);
 router.delete('/:id', authMiddleware, isAdmin, deleteProduct);

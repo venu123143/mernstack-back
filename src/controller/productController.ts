@@ -205,25 +205,27 @@ export const addToWishlist = asyncHandler(async (req, res) => {
       alreadyAdded = user.wishlist.find((id) => id.toString() === prodId);
     }
     if (alreadyAdded) {
-      let user = await User.findByIdAndUpdate(
-        _id,
-        {
-          $pull: { wishlist: prodId },
-        },
-        { new: true }
-      );
+      const user = await User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } }, { new: true })
+        .populate('wishlist')
+        .populate('wishlist.brand')
+        .populate('wishlist.color')
+        .populate('wishlist.category')
+        .populate('wishlist.seller')
+        .exec();
+
       res.json(user);
     } else {
-      let user = await User.findByIdAndUpdate(
-        _id,
-        {
-          $push: { wishlist: prodId },
-        },
-        { new: true }
-      );
+      const user = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
+        .populate('wishlist.brand')
+        .populate('wishlist.color')
+        .populate('wishlist.category')
+        .populate('wishlist.seller')
+        .exec();
       res.json(user);
     }
   } catch (error) {
+    console.log(error);
+
     throw new FancyError("can't add the items to wishlist", 500);
   }
 });
