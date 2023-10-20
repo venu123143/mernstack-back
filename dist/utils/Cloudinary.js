@@ -17,7 +17,7 @@ export const uploadImage = (filePath) => __awaiter(void 0, void 0, void 0, funct
     const upload = yield cloudinary.uploader.upload(filePath);
     return { url: upload.secure_url, asset_id: upload.asset_id, public_id: upload.public_id };
 });
-export const deleteImage = (filePath) => __awaiter(void 0, void 0, void 0, function* () {
-    const deleted = yield cloudinary.uploader.destroy(filePath);
+export const deleteImage = (public_id) => __awaiter(void 0, void 0, void 0, function* () {
+    const deleted = yield cloudinary.uploader.destroy(public_id);
     return { url: deleted.secure_url, asset_id: deleted.asset_id, public_id: deleted.public_id };
 });

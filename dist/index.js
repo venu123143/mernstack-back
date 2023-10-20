@@ -2,7 +2,6 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import session from 'express-session';
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
     console.log(`shutting down the server for handling uncaught Exception`);
@@ -21,7 +20,7 @@ import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
 import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: ['https://amazonadmin-app.netlify.app/', 'http://localhost:5173', 'http://localhost:5174', "https://amazonadmin-app.netlify.app/"],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
@@ -29,10 +28,9 @@ const options = {
 app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('./dist/public/images'));
 app.use(cookieParser());
+app.use(express.static('./dist/public/images'));
 app.use(morgan('dev'));
-app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY }));
 app.get('/', (req, res) => {
     res.send('backend home route sucessful');
 });

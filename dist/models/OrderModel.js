@@ -14,11 +14,11 @@ const orderSchema = new Schema({
     orderStatus: {
         type: String,
         default: 'Not Processed',
-        enum: ['Not Processed', 'Processing', 'Dispatched', 'Cancelled', 'Delivered']
+        enum: ['Not Processed', 'Processing', 'Dispatched', 'Cancelled', 'Delivered', 'Returned']
     },
     paymentMethod: {
         type: String,
-        enum: ["Cash on Delivery", "UPI", "Debit Card", "GiftCard", "Credit Card EMI", "CreditCard NO-Cost Emi"]
+        enum: ["Cash on Delivery", "UPI", "Debit Card", "GiftCard", "Credit Card EMI"]
     },
     orderBy: {
         type: Schema.Types.ObjectId,

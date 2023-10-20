@@ -23,7 +23,7 @@ const couponSchema = new mongoose.Schema<Coupon>({
         required: true,
         max: 100
     },
-}, { collection: 'coupon' });
+}, { collection: 'coupon', timestamps: true });
 
 const CouponModel = mongoose.model<Coupon>('Coupon', couponSchema);
 

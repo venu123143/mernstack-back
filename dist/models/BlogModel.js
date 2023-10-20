@@ -10,9 +10,8 @@ var blogSchema = new mongoose.Schema({
         unique: false,
     },
     category: {
-        type: String,
-        required: true,
-        unique: false,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BlogCategory'
     },
     numViews: {
         type: Number,
@@ -39,11 +38,11 @@ var blogSchema = new mongoose.Schema({
         default: "https://images.pexels.com/photos/262508/pexels-photo-262508.jpeg"
     },
     auther: {
-        type: String,
-        default: "Admin"
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
     images: {
         type: Array
     }
-}, { timeStamps: true, collection: 'blogs' });
+}, { timestamps: true, collection: 'blogs' });
 export default mongoose.model('Blog', blogSchema);
