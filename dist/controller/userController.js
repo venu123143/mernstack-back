@@ -236,12 +236,10 @@ export const GetWishlist = asyncHandler((req, res, next) => __awaiter(void 0, vo
     validateMogodbId(req, res, next);
     try {
         const user = yield User.findById(_id)
-            .populate('wishlist')
-            .populate('wishlist.brand')
-            .populate('wishlist.color')
-            .populate('wishlist.category')
-            .populate('wishlist.seller')
-            .exec();
+            .populate({
+            path: 'wishlist',
+            populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
+        });
         res.json(user);
     }
     catch (error) {

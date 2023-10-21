@@ -31,7 +31,7 @@ router.get('/allusers', getAllUsers)
 router.get('/sessions/oauth/google', googleOauthHandler)
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
-router.post('/wishlist', authMiddleware, addToWishlist)
+// router.post('/wishlist', authMiddleware, addToWishlist)
 
 // router.post('/sendEmailToUsers', sendEmailToUsers)
 

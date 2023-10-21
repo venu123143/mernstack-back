@@ -207,13 +207,9 @@ export const addToWishlist = asyncHandler(async (req, res) => {
     }
     if (alreadyAdded) {
       const user = await User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } }, { new: true })
-      .populate(['wishlist', 'wishlist.brand', 'wishlist.category', 'wishlist.seller']).exec()
-
       res.json(user);
     } else {
       const user = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
-        .populate(['wishlist', 'wishlist.brand', 'wishlist.category', 'wishlist.seller']).exec()
-      console.log(user);
 
       res.json(user);
     }

@@ -42,6 +42,7 @@ const options: Options = {
     withCredentials: true,
     optionSuccessStatus: 200,
 }
+
 app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

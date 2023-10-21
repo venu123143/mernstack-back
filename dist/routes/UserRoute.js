@@ -1,5 +1,5 @@
 import express from "express";
-import { googleOauthHandler, createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, handleRefreshToken, logout, updatePassword, forgotPasswordToken, resetpassword, loginAdmin, GetWishlist, saveAddress, getUserCart, emptyCart, applyCoupon, createOrder, getOrders, deleteCartItems, updateOrderStatus, deleteFromWishlist, addToWishlist, addToCart, SendOtpViaSms, verifyOtp, deleteOrder } from '../controller/userController.js';
+import { googleOauthHandler, createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, handleRefreshToken, logout, updatePassword, forgotPasswordToken, resetpassword, loginAdmin, GetWishlist, saveAddress, getUserCart, emptyCart, applyCoupon, createOrder, getOrders, deleteCartItems, updateOrderStatus, deleteFromWishlist, addToCart, SendOtpViaSms, verifyOtp, deleteOrder } from '../controller/userController.js';
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js';
 import { loginValidator, passwordValidator, registerValidator } from "../middleware/ValidateMiddleware.js";
 const router = express.Router();
@@ -15,7 +15,6 @@ router.get('/allusers', getAllUsers);
 router.get('/sessions/oauth/google', googleOauthHandler);
 router.get('/refresh', handleRefreshToken);
 router.get('/logout', logout);
-router.post('/wishlist', authMiddleware, addToWishlist);
 router.post('/addtocart', authMiddleware, addToCart);
 router.post('/cart/applycoupon', authMiddleware, applyCoupon);
 router.post('/cart/cash-order', authMiddleware, createOrder);
