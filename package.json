@@ -8,7 +8,6 @@
     "start:ts": "tsc -w",
     "start:js": "nodemon dist/index.js",
     "start": "concurrently npm:start:*",
-    "build":"npm run build"
   },
   "keywords": [],
   "author": "",
