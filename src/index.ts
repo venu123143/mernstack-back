@@ -37,7 +37,7 @@ export interface Options {
 }
 
 const options: Options = {
-    origin: ['https://amazonadmin-app.netlify.app/', 'https://main--amazonadmin-app.netlify.app/', 'https://amazon-clone-wtj7.onrender.com/', 'http://localhost:5173', 'http://localhost:5174'],
+    origin: ['https://amazonadmin-app.netlify.app', 'https://main--amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
