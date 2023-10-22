@@ -20,7 +20,7 @@ import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
 import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
-    origin: ['https://amazonadmin-app.netlify.app/', 'http://localhost:5173', 'http://localhost:5174', "https://amazonadmin-app.netlify.app/"],
+    origin: ['https://amazonadmin-app.netlify.app/', 'https://amazonadmin-app.netlify.app/', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
     withCredentials: true,
     optionSuccessStatus: 200,
