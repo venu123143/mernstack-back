@@ -197,11 +197,19 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
             alreadyAdded = user.wishlist.find((id) => id.toString() === prodId);
         }
         if (alreadyAdded) {
-            const user = yield User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } }, { new: true });
+            const user = yield User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } }, { new: true })
+                .populate({
+                path: 'wishlist',
+                populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
+            });
             res.json(user);
         }
         else {
-            const user = yield User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true });
+            const user = yield User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
+                .populate({
+                path: 'wishlist',
+                populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
+            });
             res.json(user);
         }
     }

@@ -64,7 +64,6 @@ var productSchema = new mongoose.Schema({
     sold: {
         type: Number,
         default: 0,
-        select: false
     },
     images: {
         type: Array,

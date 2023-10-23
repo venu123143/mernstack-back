@@ -62,9 +62,10 @@ export const updateBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, v
 export const getBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const updatedBlog = yield Blog.findByIdAndUpdate(id, { $inc: { numViews: 1 } }, { new: true });
+        const updatedBlog = yield Blog.findByIdAndUpdate(id, { $inc: { numViews: 1 } }, { new: true })
+            .populate(['category', 'auther']);
         if (updatedBlog) {
-            res.json({ updatedBlog, success: true });
+            res.json(updatedBlog);
         }
         else {
             res.status(404).json({ message: "Blog not found", success: false });
