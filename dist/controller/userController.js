@@ -207,9 +207,9 @@ export const resetpassword = asyncHandler((req, res) => __awaiter(void 0, void 0
     res.json(user);
 }));
 export const deleteFromWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { _id } = req.user;
-    const { prodId } = req.params;
     try {
+        const { _id } = req.user;
+        const { prodId } = req.params;
         const wish = yield User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } });
         res.json({ message: "product removed from wishlist sucessfully.", sucess: true });
     }
@@ -219,9 +219,9 @@ export const deleteFromWishlist = asyncHandler((req, res) => __awaiter(void 0, v
 }));
 export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { _id } = req.user;
-    const { prodId } = req.body;
     try {
+        const { _id } = req.user;
+        const { prodId } = req.body;
         const user = yield User.findById(_id).select('wishlist');
         const wishlist = (_a = user === null || user === void 0 ? void 0 : user.wishlist) === null || _a === void 0 ? void 0 : _a.find((id) => id.toString() === prodId);
         const wish = yield User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true });
@@ -232,9 +232,9 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
     }
 }));
 export const GetWishlist = asyncHandler((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { _id } = req.user;
-    validateMogodbId(req, res, next);
     try {
+        const { _id } = req.user;
+        validateMogodbId(req, res, next);
         const user = yield User.findById(_id)
             .populate({
             path: 'wishlist',

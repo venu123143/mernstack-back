@@ -240,10 +240,10 @@ export const resetpassword = asyncHandler(async (req, res) => {
     res.json(user)
 })
 export const deleteFromWishlist = asyncHandler(async (req, res) => {
-    const { _id } = req.user as IUser
-    const { prodId } = req.params
-
+    
     try {
+        const { _id } = req.user as IUser
+        const { prodId } = req.params
         const wish = await User.findByIdAndUpdate(_id, { $pull: { wishlist: prodId } })
         res.json({ message: "product removed from wishlist sucessfully.", sucess: true })
     } catch (error) {
@@ -252,9 +252,9 @@ export const deleteFromWishlist = asyncHandler(async (req, res) => {
 })
 
 export const addToWishlist = asyncHandler(async (req, res) => {
-    const { _id } = req.user as IUser
-    const { prodId } = req.body
     try {
+        const { _id } = req.user as IUser
+        const { prodId } = req.body
         const user = await User.findById(_id).select('wishlist')
         const wishlist = user?.wishlist?.find((id) => id.toString() === prodId)
         const wish = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
@@ -264,9 +264,9 @@ export const addToWishlist = asyncHandler(async (req, res) => {
     }
 })
 export const GetWishlist = asyncHandler(async (req, res, next) => {
-    const { _id } = req.user as IUser
-    validateMogodbId(req, res, next)
     try {
+        const { _id } = req.user as IUser
+        validateMogodbId(req, res, next)
         const user = await User.findById(_id)
             .populate({
                 path: 'wishlist',
@@ -276,7 +276,6 @@ export const GetWishlist = asyncHandler(async (req, res, next) => {
         res.json(user)
     } catch (error) {
         console.log(error);
-
         throw new FancyError('no User Exist with this id ', 404)
     }
 })
