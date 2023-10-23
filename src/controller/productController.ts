@@ -214,6 +214,10 @@ export const addToWishlist = asyncHandler(async (req, res) => {
       res.json(user);
     } else {
       const user = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
+        .populate({
+          path: 'wishlist',
+          populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
+        })
 
       res.json(user);
     }
