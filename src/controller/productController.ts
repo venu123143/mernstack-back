@@ -210,7 +210,6 @@ export const addToWishlist = asyncHandler(async (req, res) => {
       res.json(user);
     } else {
       const user = await User.findByIdAndUpdate(_id, { $push: { wishlist: prodId } }, { new: true })
-
       res.json(user);
     }
   } catch (error) {
