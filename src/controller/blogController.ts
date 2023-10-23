@@ -57,9 +57,10 @@ export const updateBlog = asyncHandler(async (req, res) => {
 export const getBlog = asyncHandler(async (req, res) => {
     const { id } = req.params
     try {
-        const updatedBlog = await Blog.findByIdAndUpdate(id, { $inc: { numViews: 1 } }, { new: true });
+        const updatedBlog = await Blog.findByIdAndUpdate(id, { $inc: { numViews: 1 } }, { new: true })
+            .populate(['category', 'auther'])
         if (updatedBlog) {
-            res.json({ updatedBlog, success: true });
+            res.json(updatedBlog);
         } else {
             res.status(404).json({ message: "Blog not found", success: false });
         }
