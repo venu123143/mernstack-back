@@ -20,10 +20,9 @@ import ColorRouter from "./routes/ColorRoute.js";
 import CouponRouter from "./routes/CoponRoute.js";
 import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
-    origin: ['https://amazonadmin-app.netlify.app', 'https://main--amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
+    origin: ['https://amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
-    withCredentials: true,
-    optionSuccessStatus: 200,
+    optionsSuccessStatus: 200
 };
 app.use(cors(options));
 app.use(express.json());

@@ -1,6 +1,6 @@
 import cookieParser from "cookie-parser"
 import express, { Application } from "express"
-import cors from "cors"
+import cors, { CorsOptions } from "cors"
 import morgan from "morgan"
 import session from 'express-session'
 
@@ -36,11 +36,10 @@ export interface Options {
     optionSuccessStatus: number
 }
 
-const options: Options = {
-    origin: ['https://amazonadmin-app.netlify.app', 'https://main--amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
+const options: CorsOptions = {
+    origin: ['https://amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
-    withCredentials: true,
-    optionSuccessStatus: 200,
+    optionsSuccessStatus: 200
 }
 
 app.use(cors(options));
