@@ -42,7 +42,6 @@ const options: CorsOptions = {
     exposedHeaders: ["set-cookie"],
     optionsSuccessStatus: 200
 }
-
 app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

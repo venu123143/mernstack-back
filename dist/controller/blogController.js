@@ -36,8 +36,8 @@ export const createBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, v
     }
 }));
 export const updateBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
     try {
+        const { id } = req.params;
         const uploader = (path) => uploadImage(path);
         const urls = [];
         const files = req.files;
@@ -60,8 +60,8 @@ export const updateBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, v
     }
 }));
 export const getBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
     try {
+        const { id } = req.params;
         const updatedBlog = yield Blog.findByIdAndUpdate(id, { $inc: { numViews: 1 } }, { new: true })
             .populate(['category', 'auther']);
         if (updatedBlog) {
@@ -85,8 +85,8 @@ export const getAllBlogs = asyncHandler((req, res) => __awaiter(void 0, void 0, 
     }
 }));
 export const deleteBlog = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
     try {
+        const { id } = req.params;
         const deletedBlog = yield Blog.findByIdAndDelete(id);
         res.json({ deletedBlog, sucess: true });
     }
