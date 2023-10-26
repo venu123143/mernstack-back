@@ -13,6 +13,7 @@ const jwtToken = async (user: IUser, statusCode: number, res: Response) => {
             secure: true,
             httpOnly: true,
             sameSite: "lax",
+            path: '/'
         }
         res.status(statusCode).cookie('loginToken', token, options).json({
             user,
