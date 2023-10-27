@@ -15,7 +15,7 @@ const jwtToken = (user, statusCode, res) => __awaiter(void 0, void 0, void 0, fu
             maxAge: 24 * 60 * 60 * 1000,
             secure: true,
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none",
             path: '/'
         };
         res.status(statusCode).cookie('loginToken', token, options).json({

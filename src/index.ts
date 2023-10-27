@@ -3,7 +3,7 @@ import express, { Application } from "express"
 import cors, { CorsOptions } from "cors"
 import morgan from "morgan"
 import session from 'express-session'
-
+import responceTime from "response-time"
 
 // Handle uncaught Exception
 process.on("uncaughtException", (err) => {
@@ -29,13 +29,6 @@ import CouponRouter from "./routes/CoponRoute.js"
 import EnquiryRouter from "./routes/EnqRoute.js"
 
 // cors, json and cookie-parser
-export interface Options {
-    origin: string[],
-    credentials: boolean,
-    withCredentials: boolean,
-    optionSuccessStatus: number
-}
-
 const options: CorsOptions = {
     origin: ['https://amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
@@ -46,8 +39,17 @@ app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(session({
+    resave: false, saveUninitialized: false, secret: process.env.SESSION_KEY as string,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+        secure: false
+    }
+}))
 app.use(express.static('./dist/public/images'));
 app.use(morgan('dev'))
+app.use(responceTime())
 // app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
 
 // controllers

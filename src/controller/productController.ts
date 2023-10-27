@@ -3,7 +3,6 @@ import slugify from "slugify";
 import fs from "fs";
 import Stripe from "stripe";
 import Razorpay from "razorpay";
-
 import Product, { IProduct } from "../models/ProductModel.js";
 import FancyError from "../utils/FancyError.js";
 import User, { IUser } from "../models/UserModel.js";
@@ -13,6 +12,8 @@ import { upload } from "../utils/Amazon_s3.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2023-08-16",
 });
+
+
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_TEST as string,
