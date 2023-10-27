@@ -2,11 +2,10 @@ import Twilio from 'twilio';
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
-import { cookie, validationResult } from "express-validator"
+import { validationResult } from "express-validator"
 import session from 'express-session'
 import uniqueId from "uniqid"
-import { Queue } from "bullmq"
-
+// import { GET_ASYNC, SET_ASYNC } from "../utils/processes/services.js"
 import User, { IUser } from "../models/UserModel.js"
 import Product, { IProduct } from "../models/ProductModel.js";
 import Cart, { ICart, ICartItem } from "../models/CartModel.js";
@@ -240,7 +239,7 @@ export const resetpassword = asyncHandler(async (req, res) => {
     res.json(user)
 })
 export const deleteFromWishlist = asyncHandler(async (req, res) => {
-    
+
     try {
         const { _id } = req.user as IUser
         const { prodId } = req.params
@@ -267,11 +266,19 @@ export const GetWishlist = asyncHandler(async (req, res, next) => {
     try {
         const { _id } = req.user as IUser
         validateMogodbId(req, res, next)
+        // const reply = await GET_ASYNC('wishlist')
+        // if (reply !== null) {
+        //     console.log("printing from cache");
+        //     res.json(JSON.parse(reply))
+        //     return
+        // }
         const user = await User.findById(_id)
             .populate({
                 path: 'wishlist',
                 populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
             })
+        // const saveResult = await SET_ASYNC('wishlist', JSON.stringify(user), 'EX', 10)
+        // console.log("new data cached ", saveResult);
 
         res.json(user)
     } catch (error) {

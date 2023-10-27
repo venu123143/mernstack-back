@@ -31,9 +31,9 @@ export const createBlog = asyncHandler(async (req, res) => {
     }
 })
 
-export const updateBlog = asyncHandler(async (req, res) => {
-    const { id } = req.params
+export const updateBlog = asyncHandler(async (req, res) => {    
     try {
+        const { id } = req.params
         const uploader = (path: string) => uploadImage(path);
         const urls = [];
         const files = req.files as Express.Multer.File[];
@@ -55,8 +55,8 @@ export const updateBlog = asyncHandler(async (req, res) => {
     }
 })
 export const getBlog = asyncHandler(async (req, res) => {
-    const { id } = req.params
     try {
+        const { id } = req.params
         const updatedBlog = await Blog.findByIdAndUpdate(id, { $inc: { numViews: 1 } }, { new: true })
             .populate(['category', 'auther'])
         if (updatedBlog) {
@@ -80,8 +80,8 @@ export const getAllBlogs = asyncHandler(async (req, res) => {
 })
 
 export const deleteBlog = asyncHandler(async (req, res) => {
-    const { id } = req.params
     try {
+        const { id } = req.params
         const deletedBlog = await Blog.findByIdAndDelete(id)
         res.json({ deletedBlog, sucess: true })
     } catch (error) {
