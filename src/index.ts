@@ -50,7 +50,6 @@ app.use(session({
 app.use(express.static('./dist/public/images'));
 app.use(morgan('dev'))
 app.use(responceTime())
-// app.use(session({ resave: true, saveUninitialized: true, secret: process.env.SESSION_KEY as string }))
 
 // controllers
 app.get('/', (req, res) => {

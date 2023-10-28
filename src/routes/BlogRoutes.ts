@@ -11,7 +11,7 @@ router.put('/likes', authMiddleware, likeBlog)
 router.put('/dislikes', authMiddleware, dislikeBlog)
 router.put('/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 2), updateBlog)
 router.get('/:id', getBlog)
-router.get('/', getAllBlogs)
 router.delete('/:id', authMiddleware, isAdmin, deleteBlog)
+router.get('/', getAllBlogs)
 
 export default router

@@ -134,6 +134,8 @@ export const getProduct = asyncHandler(async (req, res) => {
       "category",
       "brand",
       "color",
+      "ratings.postedBy",
+      "seller"
     ]);
 
     if (findProduct !== null) {
@@ -188,7 +190,7 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
           .json({ message: "this page doesnot exist", statusCode: 404 });
       }
     }
-    const products = await query.populate(["category", "brand", "color"]);
+    const products = await query.populate(["category", "brand", "color", "seller"]);
 
     return res.json(products);
   } catch (error) {
@@ -230,9 +232,13 @@ export const addToWishlist = asyncHandler(async (req, res) => {
 });
 export const rating = asyncHandler(async (req, res) => {
   const { _id } = req.user as IUser;
-  const { star, prodId, comment } = req.body;
+  const { star, prodId, comment, title } = req.body;
   try {
     // products before update or add the rating
+    if (!prodId || !star) {
+      res.status(401).json({ message: "product id and rating is mandetory to add review" })
+      return
+    }
     const product = await Product.findById(prodId);
     let alreadyRated = product?.ratings?.find(
       (rating) => rating.postedBy.toString() === _id.toString()
@@ -240,14 +246,14 @@ export const rating = asyncHandler(async (req, res) => {
     if (alreadyRated) {
       const updateRating = await Product.updateOne(
         { ratings: { $elemMatch: alreadyRated } },
-        { $set: { "ratings.$.star": star, "ratings.$.comment": comment } },
+        { $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.title": title } },
         { news: true }
       );
     } else {
       const rateProduct = await Product.findByIdAndUpdate(
         prodId,
         {
-          $push: { ratings: { star: star, postedBy: _id } },
+          $push: { ratings: { star: star, postedBy: _id, title, comment } },
         },
         { new: true }
       );
@@ -266,7 +272,7 @@ export const rating = asyncHandler(async (req, res) => {
         prodId,
         { totalRating: actualRating },
         { new: true }
-      );
+      )
       res.json(finalProd);
     }
   } catch (error) {

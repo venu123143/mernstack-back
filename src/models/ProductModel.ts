@@ -25,7 +25,8 @@ export interface IProduct {
 export interface Rating {
     _id: Types.ObjectId;
     star: number;
-    comment: string;
+    comment?: string;
+    title?: string;
     postedBy: mongoose.Types.ObjectId;
 }
 // Declare the Schema of the Mongo model
@@ -79,7 +80,8 @@ var productSchema = new mongoose.Schema({
     ratings: [{
         star: Number,
         comment: String,
-        postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+        title: String,
+        postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
     }],
     totalRating: {
         type: Number,

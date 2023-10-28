@@ -133,6 +133,8 @@ export const getProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, v
             "category",
             "brand",
             "color",
+            "ratings.postedBy",
+            "seller"
         ]);
         if (findProduct !== null) {
             res.json(findProduct);
@@ -180,7 +182,7 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
                     .json({ message: "this page doesnot exist", statusCode: 404 });
             }
         }
-        const products = yield query.populate(["category", "brand", "color"]);
+        const products = yield query.populate(["category", "brand", "color", "seller"]);
         return res.json(products);
     }
     catch (error) {
@@ -221,16 +223,20 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
 export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _c, _d;
     const { _id } = req.user;
-    const { star, prodId, comment } = req.body;
+    const { star, prodId, comment, title } = req.body;
     try {
+        if (!prodId || !star) {
+            res.status(401).json({ message: "product id and rating is mandetory to add review" });
+            return;
+        }
         const product = yield Product.findById(prodId);
         let alreadyRated = (_c = product === null || product === void 0 ? void 0 : product.ratings) === null || _c === void 0 ? void 0 : _c.find((rating) => rating.postedBy.toString() === _id.toString());
         if (alreadyRated) {
-            const updateRating = yield Product.updateOne({ ratings: { $elemMatch: alreadyRated } }, { $set: { "ratings.$.star": star, "ratings.$.comment": comment } }, { news: true });
+            const updateRating = yield Product.updateOne({ ratings: { $elemMatch: alreadyRated } }, { $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.title": title } }, { news: true });
         }
         else {
             const rateProduct = yield Product.findByIdAndUpdate(prodId, {
-                $push: { ratings: { star: star, postedBy: _id } },
+                $push: { ratings: { star: star, postedBy: _id, title, comment } },
             }, { new: true });
         }
         const AllRatings = yield Product.findById(prodId);
