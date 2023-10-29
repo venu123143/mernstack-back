@@ -208,7 +208,7 @@ export const forgotPasswordToken = asyncHandler(async (req, res) => {
     try {
         const token = await user.createPasswordResetToken();
         const ResetUrl = `<p>Hey, ${user.firstname} how are you :-)</p> Please follow this link to reset your Password. This Link will valid for next 10 minutes.
-         <a href='${process.env.BACKEND_HOST}/api/users/resetpassword/${token}'>Click Here</a>`
+         <a href='${process.env.CLIENT_ORIGIN}/reset/${token}'>Click Here</a>`
 
         const data: Email = {
             to: email,
@@ -238,8 +238,8 @@ export const resetpassword = asyncHandler(async (req, res) => {
     await user.save();
     res.json(user)
 })
-export const deleteFromWishlist = asyncHandler(async (req, res) => {
 
+export const deleteFromWishlist = asyncHandler(async (req, res) => {
     try {
         const { _id } = req.user as IUser
         const { prodId } = req.params
@@ -659,7 +659,6 @@ export const googleOauthHandler = async (req: Request, res: Response) => {
     }
 }
 
-var otp: string;
 const sendTextMessage = async (mobile: string, otp: string) => {
     try {
         const msg = await client.messages
@@ -676,14 +675,14 @@ const sendTextMessage = async (mobile: string, otp: string) => {
 };
 export const SendOtpViaSms = async (req: Request, res: Response) => {
     const mobile = req.body?.mobile
-    otp = Math.round(Math.random() * 1000000).toString();
+    const otp = Math.round(Math.random() * 1000000).toString();
     try {
         const user = await User.findOneAndUpdate(
             { mobile },
             { mobile, otp },
             { upsert: true, new: true }
         );
-        // const msg = sendTextMessage(mobile, otp)
+        const msg = sendTextMessage(mobile, otp)
         res.status(200).json({
             user,
             success: true,
@@ -707,27 +706,11 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const otpValidityDuration = 10 * 60 * 1000;
     const isValid = time ? currentTime - time : 13;
     try {
-        if (
-            user &&
-            user.otp == enterOtp &&
-            time &&
-            isValid <= otpValidityDuration
-        ) {
+        if (user && user.otp == enterOtp && time && isValid <= otpValidityDuration) {
             // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
-            const token = await user.generateAuthToken();
-            const options = {
-                maxAge: 24 * 60 * 60 * 1000,
-                secure: false,
-                httpOnly: true,
-            };
-            res
-                .status(201)
-                .cookie("loginToken", token, options)
-                .json({ user, success: true, message: "user logged in sucessfully." });
+            return jwtToken(user, 201, res)
         } else {
-            res
-                .status(403)
-                .json({ success: false, message: "otp incorrect or timeout." });
+            res.status(403).json({ success: false, message: "otp incorrect or timeout." });
         }
     } catch (error: any) {
         throw new Error(error);

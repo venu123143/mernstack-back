@@ -226,7 +226,7 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
     const { star, prodId, comment, title } = req.body;
     try {
         if (!prodId || !star) {
-            res.status(401).json({ message: "product id and rating is mandetory to add review" });
+            res.status(400).json({ message: "product id and rating is mandetory to add review" });
             return;
         }
         const product = yield Product.findById(prodId);
@@ -252,6 +252,22 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
     }
     catch (error) {
         throw new FancyError("can't able to rate the product", 500);
+    }
+}));
+export const deleteReview = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { _id } = req.user;
+    const { id } = req.params;
+    try {
+        if (!id) {
+            res.status(400).json({ message: "id is mandetory to add review" });
+            return;
+        }
+        const review = yield Product.find({ ratings: { _id: id } });
+        const del = Product.findByIdAndUpdate(id, { $pull: { ratings: { _id: id } } }, { new: true });
+        res.json(del);
+    }
+    catch (error) {
+        throw new FancyError("can't able to delete the review", 500);
     }
 }));
 export const uploadImages = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
