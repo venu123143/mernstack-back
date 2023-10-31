@@ -369,11 +369,15 @@ export const createRaziropayOrder = asyncHandler(async (req, res) => {
   try {
     razorpay.orders.create(options, function (err, order) {
       if (err) {
+        console.log(err)
+        res.status(400).json({ message: err.error?.description })
+        return
       }
-      res.status(200).json({ orderId: order.id })
+      res.status(200).json(order)
     })
+
   } catch (error: any) {
-    res.status(400).json({ msg: 'Unable to create order, Try again after some time.' })
+    throw new FancyError("Unable to create order, Try again after some time.", 400);
   }
 
 });

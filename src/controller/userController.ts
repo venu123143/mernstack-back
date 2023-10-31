@@ -517,19 +517,19 @@ export const applyCoupon = asyncHandler(async (req, res) => {
 })
 
 export const createOrder = asyncHandler(async (req, res) => {
-    const { paymentInfo, shippingInfo, orderItems, totalPrice, totalPriceAfterDiscount, } = req.body
+    const { paymentInfo, shippingInfo, orderItems, totalPrice, } = req.body
     const { _id } = req.user as IUser
 
     try {
         const order = await Order.create({
             paymentInfo,
             shippingInfo, orderItems,
-            totalPrice, totalPriceAfterDiscount,
+            totalPrice,
             user: _id
         })
         res.json(order)
     } catch (error: any) {
-        throw new FancyError(error?.message, 500)
+        throw new FancyError("unable to create An Order.", 500)
     }
 })
 

@@ -337,13 +337,17 @@ export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0,
     };
     try {
         razorpay.orders.create(options, function (err, order) {
+            var _a;
             if (err) {
+                console.log(err);
+                res.status(400).json({ message: (_a = err.error) === null || _a === void 0 ? void 0 : _a.description });
+                return;
             }
-            res.status(200).json({ orderId: order.id });
+            res.status(200).json(order);
         });
     }
     catch (error) {
-        res.status(400).json({ msg: 'Unable to create order, Try again after some time.' });
+        throw new FancyError("Unable to create order, Try again after some time.", 400);
     }
 }));
 export const uploadFilesToS3 = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {

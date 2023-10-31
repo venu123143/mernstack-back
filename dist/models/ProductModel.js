@@ -26,6 +26,9 @@ var productSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Brand"
     },
+    details: {
+        type: mongoose.Schema.Types.Mixed,
+    },
     tags: [],
     quantity: {
         type: Number,

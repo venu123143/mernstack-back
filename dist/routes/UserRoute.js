@@ -17,7 +17,7 @@ router.get('/refresh', handleRefreshToken);
 router.get('/logout', logout);
 router.post('/addtocart', authMiddleware, addToCart);
 router.post('/cart/applycoupon', authMiddleware, applyCoupon);
-router.post('/cart/cash-order', authMiddleware, createOrder);
+router.post('/cart/create', authMiddleware, createOrder);
 router.get('/wishlist', authMiddleware, GetWishlist);
 router.get('/cart', authMiddleware, getUserCart);
 router.get('/orders', authMiddleware, isAdmin, getOrders);

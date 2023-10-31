@@ -13,6 +13,7 @@ interface IShippingInfo {
     state: string;
     landmark?: string;
     pincode: number;
+    mobile: string;
 }
 
 interface IPaymentInfo {
@@ -34,7 +35,6 @@ interface IOrder extends Document {
     orderItems: IOrderItem[];
     paidAt: Date;
     totalPrice: number;
-    totalPriceAfterDiscount: number;
     orderStatus: string;
 }
 
@@ -45,11 +45,7 @@ const orderSchema: Schema = new Schema<IOrder>({
         required: true
     },
     shippingInfo: {
-        firstName: {
-            type: String,
-            required: true
-        },
-        lastName: {
+        name: {
             type: String,
             required: true
         },
@@ -59,7 +55,7 @@ const orderSchema: Schema = new Schema<IOrder>({
         },
         city: {
             type: String,
-            required: true
+            required: false
         },
         state: {
             type: String,
@@ -67,11 +63,16 @@ const orderSchema: Schema = new Schema<IOrder>({
         },
         landmark: {
             type: String,
+            required: false
         },
         pincode: {
             type: Number,
             required: true
         },
+        mobile: {
+            type: String,
+            required: true
+        }
     },
     paymentInfo: {
         razorPayOrderId: {
@@ -83,39 +84,13 @@ const orderSchema: Schema = new Schema<IOrder>({
             required: true
         },
     },
-    orderItems: [
-        {
-            product: {
-                type: Schema.Types.ObjectId,
-                ref: "Product",
-                required: true
-            },
-            color: {
-                type: Schema.Types.ObjectId,
-                ref: "Color",
-                required: true,
-            },
-            quantity: {
-                type: Number,
-                required: true,
-            },
-            price: {
-                type: Number,
-                required: true
-            }
-        }
-    ],
-    paidAt: {
-        type: Date,
-        default: Date.now()
-    },
+    orderItems: [{
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+    }],
     totalPrice: {
         type: Number,
         required: true,
-    },
-    totalPriceAfterDiscount: {
-        type: Number,
-        required: true
     },
     orderStatus: {
         type: String,

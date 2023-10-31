@@ -11,7 +11,6 @@ import Twilio from 'twilio';
 import asyncHandler from "express-async-handler";
 import crypto from "crypto";
 import { validationResult } from "express-validator";
-import uniqueId from "uniqid";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
 import Cart from "../models/CartModel.js";
@@ -457,51 +456,25 @@ export const applyCoupon = asyncHandler((req, res) => __awaiter(void 0, void 0, 
     res.json(cart);
 }));
 export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { paymentMethod, couponApplied } = req.body;
+    const { paymentInfo, shippingInfo, orderItems, totalPrice, } = req.body;
     const { _id } = req.user;
-    if (!paymentMethod)
-        throw new FancyError("Create Order Failed", 500);
     try {
-        const user = yield User.findById(_id);
-        const userCart = yield Cart.findOne({ orderBy: user === null || user === void 0 ? void 0 : user._id });
-        let finalAmount = 0;
-        if (couponApplied && (userCart === null || userCart === void 0 ? void 0 : userCart.totalAfterDiscount)) {
-            finalAmount = userCart.totalAfterDiscount;
-        }
-        else {
-            finalAmount = userCart ? userCart.cartTotal : 0;
-        }
-        if (userCart !== null && (userCart === null || userCart === void 0 ? void 0 : userCart.products) !== undefined) {
-            const newOrder = yield new Order({
-                products: userCart === null || userCart === void 0 ? void 0 : userCart.products,
-                paymentIntent: {
-                    order_id: uniqueId("ORD_"),
-                    method: paymentMethod,
-                    amount: finalAmount,
-                    created: Date.now(),
-                    currency: "USD",
-                },
-                orderBy: user === null || user === void 0 ? void 0 : user._id,
-                paymentMethod: paymentMethod,
-            }).save();
-            for (const item of userCart.products) {
-                yield Product.updateOne({ _id: item === null || item === void 0 ? void 0 : item._id }, { $inc: { quantity: -item.count, sold: item.count } });
-            }
-            res.json({ message: "sucess", sucess: true });
-        }
-        else {
-            res.json({ message: "Cart is Empty", sucess: false });
-        }
-        const cart = yield Cart.findOneAndRemove({ orderBy: user === null || user === void 0 ? void 0 : user._id });
+        const order = yield Order.create({
+            paymentInfo,
+            shippingInfo, orderItems,
+            totalPrice,
+            user: _id
+        });
+        res.json(order);
     }
     catch (error) {
-        throw new FancyError(error, 500);
+        throw new FancyError("unable to create An Order.", 500);
     }
 }));
 export const getOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     try {
-        const userOrders = yield Order.find({ orderBy: _id }).populate(["products", "orderBy"]);
+        const userOrders = yield Order.find({ orderBy: _id }).populate(["orderItems.product", "user"]);
         res.json(userOrders);
     }
     catch (error) {
