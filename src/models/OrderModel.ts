@@ -1,47 +1,102 @@
 import mongoose, { Document, Model, Schema, model } from 'mongoose';
+import { IUser } from "./UserModel.js"
+
+//     orderStatus: 'Not Processed' | 'Processing' | 'Dispatched' | 'Cancelled' | 'DeliveredF';
+//     paymentMethod: 'Cash on Delivery' | "UPI" | "Online Payment" | "GiftCard" | "Credit Card EMI" | "CreditCard NO-Cost Emi"
+
+
+interface IShippingInfo {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    state: string;
+    landmark?: string;
+    pincode: number;
+    mobile: string;
+}
+
+interface IPaymentInfo {
+    razorPayOrderId: string;
+    razorPayPaymentId: string;
+}
 
 interface IOrderItem {
-    product: Schema.Types.ObjectId;
-    count: number;
-    color: string;
+    product: string; // Reference to a Product
+    color: string;   // Reference to a Color
+    quantity: number;
+    price: number;
 }
 
 interface IOrder extends Document {
-    products: IOrderItem[];
-    paymentIntent: any;
-    orderStatus: 'Not Processed' | 'Processing' | 'Dispatched' | 'Cancelled' | 'DeliveredF';
-    paymentMethod: 'Cash on Delivery' | "UPI" | "Online Payment" | "GiftCard" | "Credit Card EMI" | "CreditCard NO-Cost Emi"
-    orderBy: Schema.Types.ObjectId;
-    createdAt: Date;
-    updatedAt: Date;
+    user: IUser;
+    shippingInfo: IShippingInfo;
+    paymentInfo: IPaymentInfo;
+    orderItems: IOrderItem[];
+    paidAt: Date;
+    totalPrice: number;
+    orderStatus: string;
 }
 
-
 const orderSchema: Schema = new Schema<IOrder>({
-    products: [
-        {
-            product: {
-                type: Schema.Types.ObjectId,
-                ref: 'Product'
-            },
-            count: Number,
-            color: String
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    shippingInfo: {
+        name: {
+            type: String,
+            required: true
+        },
+        address: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: false
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        landmark: {
+            type: String,
+            required: false
+        },
+        pincode: {
+            type: Number,
+            required: true
+        },
+        mobile: {
+            type: String,
+            required: true
         }
-    ],
-    paymentIntent: {},
+    },
+    paymentInfo: {
+        razorPayOrderId: {
+            type: String,
+            required: true
+        },
+        razorPayPaymentId: {
+            type: String,
+            required: true
+        },
+    },
+    orderItems: [{
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+    }],
+    totalPrice: {
+        type: Number,
+        required: true,
+    },
     orderStatus: {
         type: String,
-        default: 'Not Processed',
-        enum: ['Not Processed', 'Processing', 'Dispatched', 'Cancelled', 'Delivered','Returned']
-    },
-    paymentMethod: {
-        type: String,
-        enum: ["Cash on Delivery", "UPI", "Debit Card", "GiftCard", "Credit Card EMI"]
-    },
-    orderBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        default: "Ordered"
     }
+
 }, { timestamps: true, collection: 'orders' });
 
 export default mongoose.model<IOrder>('Order', orderSchema);

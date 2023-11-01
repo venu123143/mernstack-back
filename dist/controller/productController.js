@@ -246,7 +246,9 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
                 .map((item) => item.star)
                 .reduce((prev, cur) => prev + cur, 0);
             let actualRating = Math.round(ratingSum / totalRatings);
-            const finalProd = yield Product.findByIdAndUpdate(prodId, { totalRating: actualRating }, { new: true });
+            const finalProd = yield Product.findByIdAndUpdate(prodId, { totalRating: actualRating }, { new: true }).populate(["category", "brand", "color", "seller"])
+                .populate({ path: 'ratings', populate: [{ path: 'postedBy', select: 'firstname' }] });
+            console.log(finalProd);
             res.json(finalProd);
         }
     }
@@ -329,21 +331,25 @@ export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0
 }));
 export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _f;
-    const prod = req.body;
     const options = {
         amount: ((_f = req.body) === null || _f === void 0 ? void 0 : _f.cartTotalAmount) * 100,
         currency: "INR",
         receipt: "order_reciept_id"
     };
     try {
+        console.log("calling");
         razorpay.orders.create(options, function (err, order) {
+            var _a;
             if (err) {
+                console.log(err);
+                res.status(400).json({ message: (_a = err.error) === null || _a === void 0 ? void 0 : _a.description });
+                return;
             }
-            res.status(200).json({ orderId: order.id });
+            res.status(200).json(order);
         });
     }
     catch (error) {
-        res.status(400).json({ msg: 'Unable to create order, Try again after some time.' });
+        throw new FancyError("Unable to create order, Try again after some time.", 400);
     }
 }));
 export const uploadFilesToS3 = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {

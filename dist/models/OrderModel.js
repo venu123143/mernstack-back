@@ -1,28 +1,61 @@
 import mongoose, { Schema } from 'mongoose';
 const orderSchema = new Schema({
-    products: [
-        {
-            product: {
-                type: Schema.Types.ObjectId,
-                ref: 'Product'
-            },
-            count: Number,
-            color: String
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    shippingInfo: {
+        name: {
+            type: String,
+            required: true
+        },
+        address: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: false
+        },
+        state: {
+            type: String,
+            required: true
+        },
+        landmark: {
+            type: String,
+            required: false
+        },
+        pincode: {
+            type: Number,
+            required: true
+        },
+        mobile: {
+            type: String,
+            required: true
         }
-    ],
-    paymentIntent: {},
+    },
+    paymentInfo: {
+        razorPayOrderId: {
+            type: String,
+            required: true
+        },
+        razorPayPaymentId: {
+            type: String,
+            required: true
+        },
+    },
+    orderItems: [{
+            type: Schema.Types.ObjectId,
+            ref: "Product",
+        }],
+    totalPrice: {
+        type: Number,
+        required: true,
+    },
     orderStatus: {
         type: String,
-        default: 'Not Processed',
-        enum: ['Not Processed', 'Processing', 'Dispatched', 'Cancelled', 'Delivered', 'Returned']
-    },
-    paymentMethod: {
-        type: String,
-        enum: ["Cash on Delivery", "UPI", "Debit Card", "GiftCard", "Credit Card EMI"]
-    },
-    orderBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
+        default: "Ordered"
     }
 }, { timestamps: true, collection: 'orders' });
 export default mongoose.model('Order', orderSchema);

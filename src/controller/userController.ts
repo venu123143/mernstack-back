@@ -517,58 +517,37 @@ export const applyCoupon = asyncHandler(async (req, res) => {
 })
 
 export const createOrder = asyncHandler(async (req, res) => {
-    const { paymentMethod, couponApplied } = req.body
+    const { paymentInfo, shippingInfo, orderItems, totalPrice, } = req.body
     const { _id } = req.user as IUser
-    if (!paymentMethod) throw new FancyError("Create Order Failed", 500)
+
     try {
-        const user = await User.findById(_id)
-        const userCart = await Cart.findOne({ orderBy: user?._id })
-
-        let finalAmount = 0
-        if (couponApplied && userCart?.totalAfterDiscount) {
-            finalAmount = userCart.totalAfterDiscount
-        }
-        else {
-            finalAmount = userCart ? userCart.cartTotal : 0
-        }
-        if (userCart !== null && userCart?.products !== undefined) {
-            const newOrder = await new Order({
-                products: userCart?.products,
-                paymentIntent: {
-                    order_id: uniqueId("ORD_"),
-                    method: paymentMethod,
-                    amount: finalAmount,
-                    created: Date.now(),
-                    currency: "USD",
-                },
-                orderBy: user?._id,
-                paymentMethod: paymentMethod,
-
-            }).save()
-            for (const item of userCart.products) {
-                await Product.updateOne(
-                    { _id: item?._id },
-                    { $inc: { quantity: -item.count, sold: item.count } }
-                );
-            }
-            res.json({ message: "sucess", sucess: true })
-        } else {
-            res.json({ message: "Cart is Empty", sucess: false })
-        }
-        const cart = await Cart.findOneAndRemove({ orderBy: user?._id })
-
+        const order = await Order.create({
+            paymentInfo,
+            shippingInfo, orderItems,
+            totalPrice,
+            user: _id
+        })
+        res.json(order)
     } catch (error: any) {
-        throw new FancyError(error, 500)
+        throw new FancyError("unable to create An Order.", 500)
     }
 })
 
 export const getOrders = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser
     try {
-        const userOrders = await Order.find({ orderBy: _id }).populate(["products", "orderBy"])
+        const userOrders = await Order.find({ user: _id }).populate(["orderItems", "user"])
         res.json(userOrders)
 
     } catch (error) {
+        throw new FancyError("not getting the orders", 500)
+    }
+})
+export const getAllOrders = asyncHandler(async (req, res) => {
+    try {
+        const orders = await Order.find().populate(["orderItems", "user"])
+        res.json(orders)
+    } catch (error: any) {
         throw new FancyError("not getting the orders", 500)
 
     }
