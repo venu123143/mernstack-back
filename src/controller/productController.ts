@@ -272,7 +272,10 @@ export const rating = asyncHandler(async (req, res) => {
         prodId,
         { totalRating: actualRating },
         { new: true }
-      )
+      ).populate(["category", "brand", "color", "seller"])
+        .populate({ path: 'ratings', populate: [{ path: 'postedBy', select: 'firstname' }] })
+      console.log(finalProd);
+
       res.json(finalProd);
     }
   } catch (error) {
@@ -360,13 +363,14 @@ export const createCheckoutSession = asyncHandler(async (req, res) => {
 });
 
 export const createRaziropayOrder = asyncHandler(async (req, res) => {
-  const prod = req.body;
   const options = {
     amount: req.body?.cartTotalAmount * 100,
     currency: "INR",
     receipt: "order_reciept_id"
   }
   try {
+    console.log("calling");
+
     razorpay.orders.create(options, function (err, order) {
       if (err) {
         console.log(err)

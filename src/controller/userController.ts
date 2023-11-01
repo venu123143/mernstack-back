@@ -536,11 +536,20 @@ export const createOrder = asyncHandler(async (req, res) => {
 export const getOrders = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser
     try {
-        const userOrders = await Order.find({ orderBy: _id }).populate(["orderItems.product", "user"])
+        const userOrders = await Order.find({ user: _id }).populate(["orderItems", "user"])
         res.json(userOrders)
 
     } catch (error) {
         throw new FancyError("not getting the orders", 500)
+    }
+})
+export const getAllOrders = asyncHandler(async (req, res) => {
+    try {
+        const orders = await Order.find().populate(["orderItems", "user"])
+        res.json(orders)
+    } catch (error: any) {
+        throw new FancyError("not getting the orders", 500)
+
     }
 })
 export const updateOrderStatus = asyncHandler(async (req, res) => {

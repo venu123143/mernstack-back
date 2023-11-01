@@ -474,8 +474,17 @@ export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
 export const getOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     try {
-        const userOrders = yield Order.find({ orderBy: _id }).populate(["orderItems.product", "user"]);
+        const userOrders = yield Order.find({ user: _id }).populate(["orderItems", "user"]);
         res.json(userOrders);
+    }
+    catch (error) {
+        throw new FancyError("not getting the orders", 500);
+    }
+}));
+export const getAllOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orders = yield Order.find().populate(["orderItems", "user"]);
+        res.json(orders);
     }
     catch (error) {
         throw new FancyError("not getting the orders", 500);

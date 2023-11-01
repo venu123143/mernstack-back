@@ -9,7 +9,8 @@ import {
     saveAddress, getUserCart, emptyCart,
     applyCoupon, createOrder, getOrders,
     deleteCartItems, updateOrderStatus,
-    deleteFromWishlist, addToWishlist, addToCart, SendOtpViaSms, verifyOtp, deleteOrder
+    deleteFromWishlist, addToCart,
+    SendOtpViaSms, verifyOtp, deleteOrder, getAllOrders,
 } from '../controller/userController.js'
 
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js'
@@ -31,17 +32,17 @@ router.get('/allusers', getAllUsers)
 router.get('/sessions/oauth/google', googleOauthHandler)
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
-// router.post('/wishlist', authMiddleware, addToWishlist)
 
 // router.post('/sendEmailToUsers', sendEmailToUsers)
 
 router.post('/addtocart', authMiddleware, addToCart)
-// router.post('/cart', authMiddleware, updateCartItems)
 router.post('/cart/applycoupon', authMiddleware, applyCoupon)
 router.post('/cart/create', authMiddleware, createOrder)
 router.get('/wishlist', authMiddleware, GetWishlist)
 router.get('/cart', authMiddleware, getUserCart)
-router.get('/orders', authMiddleware, isAdmin, getOrders)
+router.get('/orders', authMiddleware, getOrders)
+router.get('/allorders', authMiddleware, getAllOrders)
+
 router.delete('/cart', authMiddleware, deleteCartItems)
 router.put('/updateorder/:id', authMiddleware, isAdmin, updateOrderStatus)
 router.delete('/deleteorder/:id', authMiddleware, isAdmin, deleteOrder)
