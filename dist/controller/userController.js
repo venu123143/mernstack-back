@@ -474,7 +474,9 @@ export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
 export const getOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.user;
     try {
-        const userOrders = yield Order.find({ user: _id }).populate(["orderItems", "user"]);
+        const userOrders = yield Order.find({ user: _id })
+            .populate(["orderItems", "user"])
+            .populate({ path: 'orderItems', populate: [{ path: 'color' }, { path: 'brand' }, { path: 'seller', select: 'firstname' }, { path: 'category' }] });
         res.json(userOrders);
     }
     catch (error) {
@@ -483,7 +485,7 @@ export const getOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, vo
 }));
 export const getAllOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const orders = yield Order.find().populate(["orderItems", "user"]);
+        const orders = yield Order.find().populate(["orderItems", "user"]).populate("orderItems.color");
         res.json(orders);
     }
     catch (error) {

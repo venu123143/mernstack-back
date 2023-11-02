@@ -536,7 +536,9 @@ export const createOrder = asyncHandler(async (req, res) => {
 export const getOrders = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser
     try {
-        const userOrders = await Order.find({ user: _id }).populate(["orderItems", "user"])
+        const userOrders = await Order.find({ user: _id })
+            .populate(["orderItems", "user"])
+            .populate({ path: 'orderItems', populate: [{ path: 'color' }, { path: 'brand' }, { path: 'seller', select: 'firstname' }, { path: 'category' }] })
         res.json(userOrders)
 
     } catch (error) {
@@ -545,7 +547,7 @@ export const getOrders = asyncHandler(async (req, res) => {
 })
 export const getAllOrders = asyncHandler(async (req, res) => {
     try {
-        const orders = await Order.find().populate(["orderItems", "user"])
+        const orders = await Order.find().populate(["orderItems", "user"]).populate("orderItems.color")
         res.json(orders)
     } catch (error: any) {
         throw new FancyError("not getting the orders", 500)

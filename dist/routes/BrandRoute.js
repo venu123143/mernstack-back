@@ -6,5 +6,5 @@ router.post('/', authMiddleware, isAdmin, createBrand);
 router.put('/:id', authMiddleware, isAdmin, updateBrand);
 router.delete('/:id', authMiddleware, isAdmin, deleteBrand);
 router.get('/:id', authMiddleware, isAdmin, getBrand);
-router.get('/', authMiddleware, isAdmin, getAllBrands);
+router.get('/', authMiddleware, getAllBrands);
 export default router;
