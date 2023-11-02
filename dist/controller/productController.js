@@ -152,6 +152,16 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
         const queryObj = Object.assign({}, req.query);
         const excludeFields = ["page", "sort", "limit", "fields"];
         excludeFields.forEach((el) => delete queryObj[el]);
+        for (const key in queryObj) {
+            if (queryObj[key] !== undefined && typeof queryObj[key] === 'string') {
+                if (queryObj[key].includes(',')) {
+                    queryObj[key] = queryObj[key].split(',');
+                }
+                else {
+                    queryObj[key] = [queryObj[key]];
+                }
+            }
+        }
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
         var query = Product.find(JSON.parse(queryStr));
@@ -186,6 +196,7 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
         return res.json(products);
     }
     catch (error) {
+        console.log(error);
         throw new FancyError("cannot be able to fetch products", 400);
     }
 }));
