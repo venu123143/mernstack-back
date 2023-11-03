@@ -152,7 +152,7 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
   try {
     // filtering
     const queryObj: Record<string, any> = { ...req.query };
-
+    console.log(queryObj);
     const excludeFields = ["page", "sort", "limit", "fields"];
     excludeFields.forEach((el) => delete queryObj[el]);
 
@@ -161,7 +161,12 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
         if (queryObj[key].includes(',')) {
           queryObj[key] = queryObj[key].split(',');
         } else {
-          queryObj[key] = [queryObj[key]];
+          if (['title'].includes(key)) {
+            queryObj[key] = { $regex: queryObj[key], $options: 'i' };
+            
+          } else {
+            queryObj[key] = [queryObj[key]];
+          }
         }
       }
     }

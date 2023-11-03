@@ -150,6 +150,7 @@ export const getProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, v
 export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const queryObj = Object.assign({}, req.query);
+        console.log(queryObj);
         const excludeFields = ["page", "sort", "limit", "fields"];
         excludeFields.forEach((el) => delete queryObj[el]);
         for (const key in queryObj) {
@@ -158,7 +159,12 @@ export const getAllProducts = asyncHandler((req, res) => __awaiter(void 0, void 
                     queryObj[key] = queryObj[key].split(',');
                 }
                 else {
-                    queryObj[key] = [queryObj[key]];
+                    if (['title'].includes(key)) {
+                        queryObj[key] = { $regex: queryObj[key], $options: 'i' };
+                    }
+                    else {
+                        queryObj[key] = [queryObj[key]];
+                    }
                 }
             }
         }
