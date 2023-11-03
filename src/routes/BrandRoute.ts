@@ -8,7 +8,7 @@ router.post('/', authMiddleware, isAdmin, createBrand)
 router.put('/:id', authMiddleware, isAdmin, updateBrand)
 router.delete('/:id', authMiddleware, isAdmin, deleteBrand)
 router.get('/:id', authMiddleware, isAdmin, getBrand)
-router.get('/', authMiddleware, getAllBrands)
+router.get('/', getAllBrands)
 
 
 export default router

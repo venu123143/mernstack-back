@@ -8,7 +8,7 @@ router.post('/', authMiddleware, isAdmin, createColor)
 router.put('/:id', authMiddleware, isAdmin, updateColor)
 router.delete('/:id', authMiddleware, isAdmin, deleteColor)
 router.get('/:id', authMiddleware, isAdmin, getColor)
-router.get('/', authMiddleware, getAllColors)
+router.get('/', getAllColors)
 
 
 export default router

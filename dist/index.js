@@ -24,8 +24,6 @@ import EnquiryRouter from "./routes/EnqRoute.js";
 const options = {
     origin: ['https://amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
-    exposedHeaders: ["set-cookie"],
-    optionsSuccessStatus: 200
 };
 app.use(cors(options));
 app.use(express.json());
