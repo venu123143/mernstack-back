@@ -9,13 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const jwtToken = (user, statusCode, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = yield user.generateAuthToken();
-    console.log(token);
     if (token !== undefined) {
         const options = {
             maxAge: 24 * 60 * 60 * 1000,
             secure: true,
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none",
         };
         res.status(statusCode).cookie('loginToken', token, options).json({
             user,

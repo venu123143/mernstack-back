@@ -3,7 +3,6 @@ import { Response, CookieOptions } from "express";
 
 const jwtToken = async (user: IUser, statusCode: number, res: Response) => {
     const token = await user.generateAuthToken()
-    console.log(token);
 
     if (token !== undefined) {
         // expiresIn:"3d",
@@ -12,7 +11,7 @@ const jwtToken = async (user: IUser, statusCode: number, res: Response) => {
             maxAge: 24 * 60 * 60 * 1000,
             secure: true,
             httpOnly: true,
-            sameSite: "lax",
+            sameSite: "none",
         }
         res.status(statusCode).cookie('loginToken', token, options).json({
             user,
@@ -23,5 +22,8 @@ const jwtToken = async (user: IUser, statusCode: number, res: Response) => {
         console.log('token is undefined');
     }
 }
+
+
+
 
 export default jwtToken
