@@ -44,6 +44,10 @@ const orderSchema = new Schema({
             type: String,
             required: true
         },
+        paidWith: {
+            type: String,
+            required: true
+        }
     },
     orderItems: [{
             type: Schema.Types.ObjectId,

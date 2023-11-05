@@ -17,6 +17,7 @@ import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js'
 import NodeMailer from "../utils/NodeMailer.js"
+import { razorpay } from './productController.js';
 
 const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 
@@ -517,8 +518,11 @@ export const applyCoupon = asyncHandler(async (req, res) => {
 })
 
 export const createOrder = asyncHandler(async (req, res) => {
-    const { paymentInfo, shippingInfo, orderItems, totalPrice, } = req.body
+    var { paymentInfo, shippingInfo, orderItems, totalPrice, } = req.body
     const { _id } = req.user as IUser
+    const orderDetails = await razorpay.payments.fetch(paymentInfo?.razorPayPaymentId)
+    paymentInfo = { ...paymentInfo, paidWith: orderDetails.method }
+    console.log(orderDetails, paymentInfo);
 
     try {
         const order = await Order.create({

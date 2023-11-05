@@ -35,19 +35,19 @@ export const authMiddleware = asyncHandler(async (req: Request, res: Response, n
     //     }
     // } else {
     //     throw new FancyError('No token attached to the header', 404)
-
     // }
     const { loginToken } = req.cookies
 
     try {
         const decode = jwt.verify(loginToken, process.env.SECRET_KEY as jwt.Secret) as JwtPayload
         const user = await User.findById(decode._id);
-
         if (user !== null) {
             req.user = user;
             next();
         }
     } catch (error) {
+        console.log(error);
+
         throw new FancyError('not Authorized..!, please login again', 401)
     }
 })

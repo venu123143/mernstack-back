@@ -44,15 +44,15 @@ router.get('/orders', authMiddleware, getOrders)
 router.get('/allorders', authMiddleware, getAllOrders)
 
 router.delete('/cart', authMiddleware, deleteCartItems)
-router.put('/updateorder/:id', authMiddleware, isAdmin, updateOrderStatus)
-router.delete('/deleteorder/:id', authMiddleware, isAdmin, deleteOrder)
 
-router.delete('/empty-cart', authMiddleware, emptyCart)
+router.put('/updateorder/:id', authMiddleware, updateOrderStatus)
 router.put('/update-user', authMiddleware, updateUser)
+router.delete('/deleteorder/:id', authMiddleware, isAdmin, deleteOrder)
 router.put('/save-address', authMiddleware, saveAddress)
 router.delete('/:id', authMiddleware, deleteUser)
 router.delete('/wishlist/:id', authMiddleware, deleteFromWishlist)
 router.get('/:id', authMiddleware, isAdmin, getUser)
+router.delete('/empty-cart', authMiddleware, emptyCart)
 router.put('/block-user/:id', authMiddleware, isAdmin, blockUser)
 router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser)
 

@@ -1,7 +1,7 @@
 import express from "express";
 import { authMiddleware, isAdmin } from "../middleware/authMiddleware.js";
 import { productImgResize, uploadPhoto } from "../middleware/uploadImages.js";
-import { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, addToWishlist, rating, uploadImages, deleteImages, createCheckoutSession, createRaziropayOrder, uploadFilesToS3, deleteReview } from "../controller/productController.js";
+import { createProduct, getProduct, getAllProducts, updateProduct, deleteProduct, addToWishlist, rating, uploadImages, deleteImages, createCheckoutSession, createRaziropayOrder, uploadFilesToS3, deleteReview, getOrderById } from "../controller/productController.js";
 const router = express.Router();
 router.post('/', authMiddleware, isAdmin, uploadPhoto.array('images', 10), createProduct);
 router.post('/create-checkout-session', createCheckoutSession);
@@ -15,5 +15,6 @@ router.delete('/rating/:id', authMiddleware, deleteReview);
 router.put('/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), updateProduct);
 router.delete('/:id', authMiddleware, isAdmin, deleteProduct);
 router.delete('/delete-img/:id', authMiddleware, isAdmin, deleteImages);
+router.get('/orders/:id', getOrderById);
 router.get('/', getAllProducts);
 export default router;

@@ -19,6 +19,7 @@ interface IShippingInfo {
 interface IPaymentInfo {
     razorPayOrderId: string;
     razorPayPaymentId: string;
+    paidWith: string;
 }
 
 interface IOrderItem {
@@ -83,6 +84,10 @@ const orderSchema: Schema = new Schema<IOrder>({
             type: String,
             required: true
         },
+        paidWith: {
+            type: String,
+            required: true
+        }
     },
     orderItems: [{
         type: Schema.Types.ObjectId,

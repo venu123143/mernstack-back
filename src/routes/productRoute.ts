@@ -10,7 +10,8 @@ import {
     rating, uploadImages, deleteImages,
     createCheckoutSession, createRaziropayOrder,
     uploadFilesToS3,
-    deleteReview
+    deleteReview,
+    getOrderById
 } from "../controller/productController.js";
 
 
@@ -31,8 +32,8 @@ router.delete('/rating/:id', authMiddleware, deleteReview)
 router.put('/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), updateProduct);
 router.delete('/:id', authMiddleware, isAdmin, deleteProduct);
 router.delete('/delete-img/:id', authMiddleware, isAdmin, deleteImages);
+router.get('/orders/:id', getOrderById)
 router.get('/', getAllProducts)
-
 
 
 export default router;

@@ -8,6 +8,7 @@ import FancyError from "../utils/FancyError.js";
 import User, { IUser } from "../models/UserModel.js";
 import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
 import { upload } from "../utils/Amazon_s3.js";
+import { Request, Response } from "express";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2023-08-16",
@@ -15,11 +16,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 
 
-const razorpay = new Razorpay({
+export const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_TEST as string,
   key_secret: process.env.RAZORPAY_SECRET as string,
 });
-
 export const createProduct = asyncHandler(async (req, res) => {
   const { title, description, category, brand } = req.body
   const formData = req.body;
@@ -163,7 +163,7 @@ export const getAllProducts = asyncHandler(async (req, res): Promise<any> => {
         } else {
           if (['title'].includes(key)) {
             queryObj[key] = { $regex: queryObj[key], $options: 'i' };
-            
+
           } else {
             queryObj[key] = [queryObj[key]];
           }
@@ -386,7 +386,6 @@ export const createRaziropayOrder = asyncHandler(async (req, res) => {
     receipt: "order_reciept_id"
   }
   try {
-    console.log("calling");
 
     razorpay.orders.create(options, function (err, order) {
       if (err) {
@@ -403,6 +402,13 @@ export const createRaziropayOrder = asyncHandler(async (req, res) => {
 
 });
 
+export const getOrderById = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const orderDetails = await razorpay.payments.fetch(id)
+  // razorpay.payments.all(option)
+  res.json(orderDetails)
+
+}
 export const uploadFilesToS3 = asyncHandler(async (req, res) => {
   const files = req.files as Express.Multer.File[];
   const urls = []

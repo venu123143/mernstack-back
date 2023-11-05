@@ -20,7 +20,7 @@ import { upload } from "../utils/Amazon_s3.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-08-16",
 });
-const razorpay = new Razorpay({
+export const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_TEST,
     key_secret: process.env.RAZORPAY_SECRET,
 });
@@ -354,7 +354,6 @@ export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0,
         receipt: "order_reciept_id"
     };
     try {
-        console.log("calling");
         razorpay.orders.create(options, function (err, order) {
             var _a;
             if (err) {
@@ -369,6 +368,11 @@ export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0,
         throw new FancyError("Unable to create order, Try again after some time.", 400);
     }
 }));
+export const getOrderById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const orderDetails = yield razorpay.payments.fetch(id);
+    res.json(orderDetails);
+});
 export const uploadFilesToS3 = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const files = req.files;
     const urls = [];

@@ -22,6 +22,7 @@ export const authMiddleware = asyncHandler((req, res, next) => __awaiter(void 0,
         }
     }
     catch (error) {
+        console.log(error);
         throw new FancyError('not Authorized..!, please login again', 401);
     }
 }));
