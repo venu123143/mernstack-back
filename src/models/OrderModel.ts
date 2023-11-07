@@ -24,9 +24,9 @@ interface IPaymentInfo {
 
 interface IOrderItem {
     product: string; // Reference to a Product
-    color: string;   // Reference to a Color
     quantity: number;
-    price: number;
+    orderStatus: string;
+    color: string;
 }
 
 interface IOrder extends Document {
@@ -36,7 +36,6 @@ interface IOrder extends Document {
     orderItems: IOrderItem[];
     paidAt: Date;
     totalPrice: number;
-    orderStatus: string;
 }
 
 const orderSchema: Schema = new Schema<IOrder>({
@@ -90,17 +89,29 @@ const orderSchema: Schema = new Schema<IOrder>({
         }
     },
     orderItems: [{
-        type: Schema.Types.ObjectId,
-        ref: "Product",
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: "Product",
+        },
+        quantity: {
+            type: Number,
+            required: true,
+        },
+        color: {
+            type: String,
+            required: true
+        },
+        orderStatus: {
+            type: String,
+            required: true,
+            default: "Ordered"
+        },
     }],
     totalPrice: {
         type: Number,
         required: true,
     },
-    orderStatus: {
-        type: String,
-        default: "Ordered"
-    }
+
 
 }, { timestamps: true, collection: 'orders' });
 

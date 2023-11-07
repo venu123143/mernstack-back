@@ -461,7 +461,6 @@ export const createOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
     const { _id } = req.user;
     const orderDetails = yield razorpay.payments.fetch(paymentInfo === null || paymentInfo === void 0 ? void 0 : paymentInfo.razorPayPaymentId);
     paymentInfo = Object.assign(Object.assign({}, paymentInfo), { paidWith: orderDetails.method });
-    console.log(orderDetails, paymentInfo);
     try {
         const order = yield Order.create({
             paymentInfo,
@@ -479,12 +478,18 @@ export const getOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, vo
     const { _id } = req.user;
     try {
         const userOrders = yield Order.find({ user: _id })
-            .populate(["orderItems", "user"])
-            .populate({ path: 'orderItems', populate: [{ path: 'color' }, { path: 'brand' }, { path: 'seller', select: 'firstname' }, { path: 'category' }] });
+            .populate({
+            path: 'user', select: ['firstname', 'lastname']
+        }).populate({
+            path: 'orderItems.product', select: ['title', 'price', 'images'],
+            populate: {
+                path: 'color',
+            }
+        });
         res.json(userOrders);
     }
     catch (error) {
-        throw new FancyError("not getting the orders", 500);
+        throw new FancyError("not getting the   ", 500);
     }
 }));
 export const getAllOrders = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -497,8 +502,9 @@ export const getAllOrders = asyncHandler((req, res) => __awaiter(void 0, void 0,
     }
 }));
 export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { Status } = req.body;
+    const { Status, index } = req.body;
     const { id } = req.params;
+    const { _id } = req.user;
     let orderStatus;
     if (["process", "processing", "procesed", "processed"].includes(Status.toLowerCase())) {
         orderStatus = "Processing";
@@ -516,12 +522,22 @@ export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, vo
         orderStatus = "Returned";
     }
     try {
-        const findOrder = yield Order.findByIdAndUpdate(id, {
-            orderStatus: orderStatus,
-        }, { new: true });
-        res.json(findOrder);
+        const order = yield Order.findOne({ _id: id, user: _id });
+        if (!order) {
+            res.status(404).json({ message: "Order not found" });
+            return;
+        }
+        if (index < 0 || index >= order.orderItems.length) {
+            res.status(400).json({ message: "Invalid item index" });
+            return;
+        }
+        const originalItem = order.orderItems[index];
+        order.orderItems[index] = Object.assign(Object.assign({}, originalItem), { color: originalItem.color, quantity: originalItem.quantity, orderStatus: orderStatus });
+        yield order.save();
+        res.json(order);
     }
     catch (error) {
+        console.log(error);
         throw new FancyError("not able to update status", 400);
     }
 }));

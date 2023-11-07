@@ -50,16 +50,27 @@ const orderSchema = new Schema({
         }
     },
     orderItems: [{
-            type: Schema.Types.ObjectId,
-            ref: "Product",
+            product: {
+                type: Schema.Types.ObjectId,
+                ref: "Product",
+            },
+            quantity: {
+                type: Number,
+                required: true,
+            },
+            color: {
+                type: String,
+                required: true
+            },
+            orderStatus: {
+                type: String,
+                required: true,
+                default: "Ordered"
+            },
         }],
     totalPrice: {
         type: Number,
         required: true,
     },
-    orderStatus: {
-        type: String,
-        default: "Ordered"
-    }
 }, { timestamps: true, collection: 'orders' });
 export default mongoose.model('Order', orderSchema);

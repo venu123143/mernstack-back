@@ -522,7 +522,6 @@ export const createOrder = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser
     const orderDetails = await razorpay.payments.fetch(paymentInfo?.razorPayPaymentId)
     paymentInfo = { ...paymentInfo, paidWith: orderDetails.method }
-    console.log(orderDetails, paymentInfo);
 
     try {
         const order = await Order.create({
@@ -541,12 +540,18 @@ export const getOrders = asyncHandler(async (req, res) => {
     const { _id } = req.user as IUser
     try {
         const userOrders = await Order.find({ user: _id })
-            .populate(["orderItems", "user"])
-            .populate({ path: 'orderItems', populate: [{ path: 'color' }, { path: 'brand' }, { path: 'seller', select: 'firstname' }, { path: 'category' }] })
+            .populate({
+                path: 'user', select: ['firstname', 'lastname']
+            }).populate({
+                path: 'orderItems.product', select: ['title', 'price', 'images'],
+                populate: {
+                    path: 'color',
+                }
+            })
         res.json(userOrders)
 
     } catch (error) {
-        throw new FancyError("not getting the orders", 500)
+        throw new FancyError("not getting the   ", 500)
     }
 })
 export const getAllOrders = asyncHandler(async (req, res) => {
@@ -559,8 +564,9 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     }
 })
 export const updateOrderStatus = asyncHandler(async (req, res) => {
-    const { Status } = req.body
+    const { Status, index } = req.body
     const { id } = req.params
+    const { _id } = req.user as IUser
 
     let orderStatus;
     if (["process", "processing", "procesed", "processed"].includes(Status.toLowerCase())) {
@@ -580,12 +586,30 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     }
 
     try {
-        const findOrder = await Order.findByIdAndUpdate(id,
-            {
-                orderStatus: orderStatus,
-            }, { new: true })
-        res.json(findOrder)
+        const order = await Order.findOne({ _id: id, user: _id });
+
+        if (!order) {
+            res.status(404).json({ message: "Order not found" });
+            return
+        }
+        if (index < 0 || index >= order.orderItems.length) {
+            res.status(400).json({ message: "Invalid item index" });
+            return
+        }
+        const originalItem = order.orderItems[index];
+
+        order.orderItems[index] = {
+            ...originalItem,
+            color: originalItem.color,
+            quantity: originalItem.quantity,
+            orderStatus: orderStatus as string
+        };
+        await order.save();
+        res.json(order)
+
     } catch (error) {
+        console.log(error);
+
         throw new FancyError("not able to update status", 400)
 
     }
