@@ -587,7 +587,6 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
 
     try {
         const order = await Order.findOne({ _id: id, user: _id });
-
         if (!order) {
             res.status(404).json({ message: "Order not found" });
             return
@@ -602,8 +601,10 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
             ...originalItem,
             color: originalItem.color,
             quantity: originalItem.quantity,
-            orderStatus: orderStatus as string
+            orderStatus: orderStatus as string,
+            product: originalItem.product
         };
+
         await order.save();
         res.json(order)
 

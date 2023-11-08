@@ -532,7 +532,7 @@ export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, vo
             return;
         }
         const originalItem = order.orderItems[index];
-        order.orderItems[index] = Object.assign(Object.assign({}, originalItem), { color: originalItem.color, quantity: originalItem.quantity, orderStatus: orderStatus });
+        order.orderItems[index] = Object.assign(Object.assign({}, originalItem), { color: originalItem.color, quantity: originalItem.quantity, orderStatus: orderStatus, product: originalItem.product });
         yield order.save();
         res.json(order);
     }
