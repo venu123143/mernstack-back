@@ -267,19 +267,12 @@ export const GetWishlist = asyncHandler(async (req, res, next) => {
     try {
         const { _id } = req.user as IUser
         validateMogodbId(req, res, next)
-        // const reply = await GET_ASYNC('wishlist')
-        // if (reply !== null) {
-        //     console.log("printing from cache");
-        //     res.json(JSON.parse(reply))
-        //     return
-        // }
+
         const user = await User.findById(_id)
             .populate({
                 path: 'wishlist',
-                populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
+                populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }, { path: 'color' }]
             })
-        // const saveResult = await SET_ASYNC('wishlist', JSON.stringify(user), 'EX', 10)
-        // console.log("new data cached ", saveResult);
 
         res.json(user)
     } catch (error) {
@@ -519,6 +512,7 @@ export const applyCoupon = asyncHandler(async (req, res) => {
 
 export const createOrder = asyncHandler(async (req, res) => {
     var { paymentInfo, shippingInfo, orderItems, totalPrice, } = req.body
+
     const { _id } = req.user as IUser
     const orderDetails = await razorpay.payments.fetch(paymentInfo?.razorPayPaymentId)
     paymentInfo = { ...paymentInfo, paidWith: orderDetails.method }
@@ -532,6 +526,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         })
         res.json(order)
     } catch (error: any) {
+
         throw new FancyError("unable to create An Order.", 500)
     }
 })

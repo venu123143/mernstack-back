@@ -238,7 +238,7 @@ export const GetWishlist = asyncHandler((req, res, next) => __awaiter(void 0, vo
         const user = yield User.findById(_id)
             .populate({
             path: 'wishlist',
-            populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }]
+            populate: [{ path: 'brand' }, { path: 'category' }, { path: 'seller', select: 'firstname' }, { path: 'color' }]
         });
         res.json(user);
     }
