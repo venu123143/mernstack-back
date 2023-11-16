@@ -684,6 +684,7 @@ export const SendOtpViaSms = async (req: Request, res: Response) => {
     if (otp.length !== 6) {
         otp = Math.floor(100000 + Math.random() * 900000).toString();
     }
+
     try {
         const user = await User.findOneAndUpdate(
             { mobile },

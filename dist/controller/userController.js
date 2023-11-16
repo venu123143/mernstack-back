@@ -597,14 +597,16 @@ const sendTextMessage = (mobile, otp) => __awaiter(void 0, void 0, void 0, funct
 export const SendOtpViaSms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _c;
     const mobile = (_c = req.body) === null || _c === void 0 ? void 0 : _c.mobile;
-    const otp = Math.round(Math.random() * 1000000).toString();
+    let otp = Math.floor(100000 + Math.random() * 900000).toString();
+    if (otp.length !== 6) {
+        otp = Math.floor(100000 + Math.random() * 900000).toString();
+    }
     try {
         const user = yield User.findOneAndUpdate({ mobile }, { mobile, otp }, { upsert: true, new: true });
-        const msg = sendTextMessage(mobile, otp);
         res.status(200).json({
             user,
             success: true,
-            message: `Verification code sent to ${mobile} `,
+            message: `Verification code: ${otp} sent to ${mobile} `,
         });
     }
     catch (error) {
@@ -615,7 +617,7 @@ export const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, functio
     var _d, _e, _f;
     const curOTP = (_d = req.body) === null || _d === void 0 ? void 0 : _d.otp;
     const mobile = (_e = req.body) === null || _e === void 0 ? void 0 : _e.mobile;
-    const enterOtp = curOTP.toString().replaceAll(",", "");
+    const enterOtp = curOTP === null || curOTP === void 0 ? void 0 : curOTP.toString().replaceAll(",", "");
     const user = yield User.findOne({ mobile });
     const time = (_f = user === null || user === void 0 ? void 0 : user.updatedAt) === null || _f === void 0 ? void 0 : _f.getTime();
     const currentTime = new Date().getTime();
