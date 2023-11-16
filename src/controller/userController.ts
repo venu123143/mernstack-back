@@ -708,7 +708,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const curOTP = req.body?.otp;
     const mobile = req.body?.mobile;
     const enterOtp = curOTP?.toString().replaceAll(",", "");
-
+    
     const user = await User.findOne({ mobile });
     const time = user?.updatedAt?.getTime();
     const currentTime = new Date().getTime();

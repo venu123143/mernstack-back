@@ -22,7 +22,7 @@ const router = express.Router();
 router.post('/register', registerValidator, createUser)
 router.post('/login', loginValidator, loginUser)
 router.post('/req-otp', SendOtpViaSms)
-router.post('/verify-otp', verifyOtp)
+router.post('/verify-otp', verifyOtp) 
 router.post('/forgot-password-token', loginValidator, forgotPasswordToken)
 router.post('/admin-login', loginValidator, loginAdmin)
 
