@@ -680,18 +680,21 @@ const sendTextMessage = async (mobile: string, otp: string) => {
 };
 export const SendOtpViaSms = async (req: Request, res: Response) => {
     const mobile = req.body?.mobile
-    const otp = Math.round(Math.random() * 1000000).toString();
+    let otp = Math.floor(100000 + Math.random() * 900000).toString();
+    if (otp.length !== 6) {
+        otp = Math.floor(100000 + Math.random() * 900000).toString();
+    }
     try {
         const user = await User.findOneAndUpdate(
             { mobile },
             { mobile, otp },
             { upsert: true, new: true }
         );
-        const msg = sendTextMessage(mobile, otp)
+        // const msg = sendTextMessage(mobile, otp)
         res.status(200).json({
             user,
             success: true,
-            message: `Verification code sent to ${mobile} `,
+            message: `Verification code: ${otp} sent to ${mobile} `,
         });
     } catch (error) {
         res.status(500).json({ success: false, message: `Incorrect Number or Invalid Number.` });
@@ -703,7 +706,7 @@ export const SendOtpViaSms = async (req: Request, res: Response) => {
 export const verifyOtp = async (req: Request, res: Response) => {
     const curOTP = req.body?.otp;
     const mobile = req.body?.mobile;
-    const enterOtp = curOTP.toString().replaceAll(",", "");
+    const enterOtp = curOTP?.toString().replaceAll(",", "");
 
     const user = await User.findOne({ mobile });
     const time = user?.updatedAt?.getTime();

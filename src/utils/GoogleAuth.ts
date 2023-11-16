@@ -8,8 +8,8 @@ interface GoogletTokensResult {
     scope: string;
     id_token: string;
     token_type: string;
-
 }
+
 export const getGoogleOauthTokens = async ({ code }: { code: string }): Promise<GoogletTokensResult> => {
     const url = "https://oauth2.googleapis.com/token";
     const values = {
