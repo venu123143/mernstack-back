@@ -628,7 +628,7 @@ export const verifyOtp = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return jwtToken(user, 201, res);
         }
         else {
-            res.status(403).json({ success: false, message: "otp incorrect or timeout." });
+            res.status(401).json({ success: false, message: "otp incorrect or timeout, Try again..!" });
         }
     }
     catch (error) {

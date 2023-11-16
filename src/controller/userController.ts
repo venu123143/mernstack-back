@@ -719,7 +719,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
             // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
             return jwtToken(user, 201, res)
         } else {
-            res.status(403).json({ success: false, message: "otp incorrect or timeout." });
+            res.status(401).json({ success: false, message: "otp incorrect or timeout, Try again..!" });
         }
     } catch (error: any) {
         throw new Error(error);
