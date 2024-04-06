@@ -37,14 +37,14 @@ app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(session({
-    resave: false, saveUninitialized: false, secret: process.env.SESSION_KEY as string,
-    cookie: {
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: "lax",
-        secure: false
-    }
-}))
+// app.use(session({
+//     resave: false, saveUninitialized: false, secret: process.env.SESSION_KEY as string,
+//     cookie: {
+//         maxAge: 24 * 60 * 60 * 1000,
+//         sameSite: "lax",
+//         secure: false
+//     }
+// }))
 app.use(express.static('./dist/public/images'));
 app.use(morgan('dev'))
 app.use(responceTime())

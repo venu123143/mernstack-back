@@ -38,7 +38,7 @@ export const createUser = asyncHandler(async (req, res): Promise<any> => {
     if (!errors.isEmpty()) {
         return res.status(400).json(errors)
     }
-    const findUser = await User.findOne({ email })
+    const findUser = await User.findOne({ email, mobile: mobile })
     if (!findUser) {
         // creating new user
         const newUser = await User.create(req.body);
@@ -708,7 +708,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const curOTP = req.body?.otp;
     const mobile = req.body?.mobile;
     const enterOtp = curOTP?.toString().replaceAll(",", "");
-    
+
     const user = await User.findOne({ mobile });
     const time = user?.updatedAt?.getTime();
     const currentTime = new Date().getTime();

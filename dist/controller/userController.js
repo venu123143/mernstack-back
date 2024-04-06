@@ -32,7 +32,7 @@ export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, v
     if (!errors.isEmpty()) {
         return res.status(400).json(errors);
     }
-    const findUser = yield User.findOne({ email });
+    const findUser = yield User.findOne({ email, mobile: mobile });
     if (!findUser) {
         const newUser = yield User.create(req.body);
         res.json(newUser);
