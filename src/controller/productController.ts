@@ -21,41 +21,24 @@ export const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET as string,
 });
 export const createProduct = asyncHandler(async (req, res) => {
-  const { title, description, category, brand } = req.body
-  const formData = req.body;
-  formData.quantity = JSON.parse(formData.quantity);
-  formData.price = JSON.parse(formData.price);
-
-  formData.color = JSON.parse(formData.color);
-  formData.tags = JSON.parse(formData.tags);
-
+  const { title, description, category, brand, quantity, color, tags, price, images } = req.body
   try {
-
-    const uploader = (path: string) => uploadImage(path);
-    const urls = [];
-    const files = req.files as Express.Multer.File[];
-    for (const file of files) {
-      const { path } = file;
-      const newpath = await uploader(path);
-      urls.push(newpath);
-      fs.unlinkSync(path);
-    }
     if (req.body.title) {
       req.body.slug = slugify.default(req.body.title);
     }
     if (req.user) {
       const product = await Product.create({
         title, description,
-        images: urls,
+        images,
         category, brand,
         seller: req.user._id,
         slug: req.body.slug,
-        price: formData.price,
-        tags: formData.tags,
-        quantity: formData.quantity,
-        color: formData.color
+        price: price,
+        tags: tags,
+        quantity: quantity,
+        color: color
       });
-      res.json(product);
+      res.status(200).json(product);
     }
   } catch (error) {
     throw new FancyError(" can't be able to create product, enter all required fields..!", 400);
@@ -63,32 +46,15 @@ export const createProduct = asyncHandler(async (req, res) => {
 });
 export const updateProduct = asyncHandler(async (req, res) => {
   try {
-    const uploader = (path: string) => uploadImage(path);
-    let urls = [];
-    const files = req.files as Express.Multer.File[];
-    for (const file of files) {
-      const { path } = file;
-      const newpath = await uploader(path);
-      urls.push(newpath);
-      fs.unlinkSync(path);
-    }
     if (req.body.title) {
       req.body.slug = slugify.default(req.body.title);
     }
-    const { title, description, category, brand } = req.body
+    const { title, description, category, brand, quantity, color, tags, price, images } = req.body
 
-    const formData = req.body;
-    formData.quantity = JSON.parse(formData.quantity);
-    formData.price = JSON.parse(formData.price);
-    formData.color = JSON.parse(formData.color);
-    formData.tags = JSON.parse(formData.tags);
-    formData.existingImg = formData?.existingImg?.map((item: any) => JSON.parse(item));
-    console.log(formData.existingImg);
+    // if (formData?.existingImg?.length !== 0) {
+    //   urls.unshift(...formData.existingImg)
+    // }
 
-    if (formData?.existingImg?.length !== 0) {
-      urls.unshift(...formData.existingImg)
-    }
-    console.log(urls);
     const { id } = req.params;
     if (req.user) {
       const updateProd = await Product.findOneAndUpdate({ _id: id },
@@ -96,11 +62,8 @@ export const updateProduct = asyncHandler(async (req, res) => {
           title, description,
           category, brand,
           slug: req.body.slug,
-          price: formData.price,
-          tags: formData.tags,
-          quantity: formData.quantity,
-          color: formData.color,
-          images: urls
+          price, tags, quantity,
+          color, images
         }, {
         new: true,
       }).populate(["category", "brand", "color"]);
@@ -318,8 +281,6 @@ export const deleteReview = asyncHandler(async (req, res) => {
 });
 
 export const uploadImages = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
   try {
     const uploader = (path: string) => uploadImage(path);
     const urls = [];
@@ -331,16 +292,12 @@ export const uploadImages = asyncHandler(async (req, res) => {
       urls.push(newpath);
       fs.unlinkSync(path);
     }
-    const findProduct = await Product.findByIdAndUpdate(
-      id,
-      { images: urls.map((file) => file) },
-      { new: true }
-    );
-    res.json(findProduct);
+
+    res.json({ images: urls, message: 'images uploaded successfully' });
   } catch (error) {
     throw new FancyError("cannot upload images", 400);
   }
-});
+}) as any;
 export const deleteImages = asyncHandler(async (req, res) => {
   const { path } = req.params;
   try {
@@ -420,3 +377,11 @@ export const uploadFilesToS3 = asyncHandler(async (req, res) => {
   res.json({ urls })
 })
 
+export const uploadCkImage = asyncHandler(async (req, res) => {
+  // const token = req.body.ckCsrfToken;
+  // const fileUrl = `${req.protocol}://${req.get('host')}/images/${req.file?.filename}`;
+  const response = {
+    url: req?.file?.path
+  };
+  res.json(response);
+});

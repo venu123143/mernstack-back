@@ -28,7 +28,7 @@ app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static('./dist/public/images'));
+app.use(express.static('./src/public/images'));
 app.use(morgan('dev'));
 app.use(responceTime());
 app.get('/', (req, res) => {

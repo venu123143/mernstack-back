@@ -25,38 +25,24 @@ export const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_SECRET,
 });
 export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { title, description, category, brand } = req.body;
-    const formData = req.body;
-    formData.quantity = JSON.parse(formData.quantity);
-    formData.price = JSON.parse(formData.price);
-    formData.color = JSON.parse(formData.color);
-    formData.tags = JSON.parse(formData.tags);
+    const { title, description, category, brand, quantity, color, tags, price, images } = req.body;
     try {
-        const uploader = (path) => uploadImage(path);
-        const urls = [];
-        const files = req.files;
-        for (const file of files) {
-            const { path } = file;
-            const newpath = yield uploader(path);
-            urls.push(newpath);
-            fs.unlinkSync(path);
-        }
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title);
         }
         if (req.user) {
             const product = yield Product.create({
                 title, description,
-                images: urls,
+                images,
                 category, brand,
                 seller: req.user._id,
                 slug: req.body.slug,
-                price: formData.price,
-                tags: formData.tags,
-                quantity: formData.quantity,
-                color: formData.color
+                price: price,
+                tags: tags,
+                quantity: quantity,
+                color: color
             });
-            res.json(product);
+            res.status(200).json(product);
         }
     }
     catch (error) {
@@ -64,43 +50,19 @@ export const createProduct = asyncHandler((req, res) => __awaiter(void 0, void 0
     }
 }));
 export const updateProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     try {
-        const uploader = (path) => uploadImage(path);
-        let urls = [];
-        const files = req.files;
-        for (const file of files) {
-            const { path } = file;
-            const newpath = yield uploader(path);
-            urls.push(newpath);
-            fs.unlinkSync(path);
-        }
         if (req.body.title) {
             req.body.slug = slugify.default(req.body.title);
         }
-        const { title, description, category, brand } = req.body;
-        const formData = req.body;
-        formData.quantity = JSON.parse(formData.quantity);
-        formData.price = JSON.parse(formData.price);
-        formData.color = JSON.parse(formData.color);
-        formData.tags = JSON.parse(formData.tags);
-        formData.existingImg = (_a = formData === null || formData === void 0 ? void 0 : formData.existingImg) === null || _a === void 0 ? void 0 : _a.map((item) => JSON.parse(item));
-        console.log(formData.existingImg);
-        if (((_b = formData === null || formData === void 0 ? void 0 : formData.existingImg) === null || _b === void 0 ? void 0 : _b.length) !== 0) {
-            urls.unshift(...formData.existingImg);
-        }
-        console.log(urls);
+        const { title, description, category, brand, quantity, color, tags, price, images } = req.body;
         const { id } = req.params;
         if (req.user) {
             const updateProd = yield Product.findOneAndUpdate({ _id: id }, {
                 title, description,
                 category, brand,
                 slug: req.body.slug,
-                price: formData.price,
-                tags: formData.tags,
-                quantity: formData.quantity,
-                color: formData.color,
-                images: urls
+                price, tags, quantity,
+                color, images
             }, {
                 new: true,
             }).populate(["category", "brand", "color"]);
@@ -238,7 +200,7 @@ export const addToWishlist = asyncHandler((req, res) => __awaiter(void 0, void 0
     }
 }));
 export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _a, _b;
     const { _id } = req.user;
     const { star, prodId, comment, title } = req.body;
     try {
@@ -247,7 +209,7 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
             return;
         }
         const product = yield Product.findById(prodId);
-        let alreadyRated = (_c = product === null || product === void 0 ? void 0 : product.ratings) === null || _c === void 0 ? void 0 : _c.find((rating) => rating.postedBy.toString() === _id.toString());
+        let alreadyRated = (_a = product === null || product === void 0 ? void 0 : product.ratings) === null || _a === void 0 ? void 0 : _a.find((rating) => rating.postedBy.toString() === _id.toString());
         if (alreadyRated) {
             const updateRating = yield Product.updateOne({ ratings: { $elemMatch: alreadyRated } }, { $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.title": title } }, { news: true });
         }
@@ -257,7 +219,7 @@ export const rating = asyncHandler((req, res) => __awaiter(void 0, void 0, void 
             }, { new: true });
         }
         const AllRatings = yield Product.findById(prodId);
-        let totalRatings = (_d = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _d === void 0 ? void 0 : _d.length;
+        let totalRatings = (_b = AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) === null || _b === void 0 ? void 0 : _b.length;
         if ((AllRatings === null || AllRatings === void 0 ? void 0 : AllRatings.ratings) !== undefined && totalRatings !== undefined) {
             let ratingSum = AllRatings.ratings
                 .map((item) => item.star)
@@ -290,7 +252,6 @@ export const deleteReview = asyncHandler((req, res) => __awaiter(void 0, void 0,
     }
 }));
 export const uploadImages = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
     try {
         const uploader = (path) => uploadImage(path);
         const urls = [];
@@ -301,8 +262,7 @@ export const uploadImages = asyncHandler((req, res) => __awaiter(void 0, void 0,
             urls.push(newpath);
             fs.unlinkSync(path);
         }
-        const findProduct = yield Product.findByIdAndUpdate(id, { images: urls.map((file) => file) }, { new: true });
-        res.json(findProduct);
+        res.json({ images: urls, message: 'images uploaded successfully' });
     }
     catch (error) {
         throw new FancyError("cannot upload images", 400);
@@ -319,10 +279,10 @@ export const deleteImages = asyncHandler((req, res) => __awaiter(void 0, void 0,
     }
 }));
 export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _c;
     const products = req.body;
     try {
-        const line_items = (_e = products === null || products === void 0 ? void 0 : products.cartItems) === null || _e === void 0 ? void 0 : _e.map((product) => ({
+        const line_items = (_c = products === null || products === void 0 ? void 0 : products.cartItems) === null || _c === void 0 ? void 0 : _c.map((product) => ({
             price_data: {
                 currency: "inr",
                 product_data: {
@@ -347,9 +307,9 @@ export const createCheckoutSession = asyncHandler((req, res) => __awaiter(void 0
     }
 }));
 export const createRaziropayOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _d;
     const options = {
-        amount: ((_f = req.body) === null || _f === void 0 ? void 0 : _f.cartTotalAmount) * 100,
+        amount: ((_d = req.body) === null || _d === void 0 ? void 0 : _d.cartTotalAmount) * 100,
         currency: "INR",
         receipt: "order_reciept_id"
     };
@@ -381,4 +341,11 @@ export const uploadFilesToS3 = asyncHandler((req, res) => __awaiter(void 0, void
         urls.push({ url: result });
     }
     res.json({ urls });
+}));
+export const uploadCkImage = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e;
+    const response = {
+        url: (_e = req === null || req === void 0 ? void 0 : req.file) === null || _e === void 0 ? void 0 : _e.path
+    };
+    res.json(response);
 }));

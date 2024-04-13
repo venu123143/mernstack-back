@@ -45,7 +45,7 @@ app.use(cookieParser());
 //         secure: false
 //     }
 // }))
-app.use(express.static('./dist/public/images'));
+app.use(express.static('./src/public/images'));
 app.use(morgan('dev'))
 app.use(responceTime())
 
