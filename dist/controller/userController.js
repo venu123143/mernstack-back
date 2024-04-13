@@ -504,25 +504,9 @@ export const getAllOrders = asyncHandler((req, res) => __awaiter(void 0, void 0,
 export const updateOrderStatus = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { Status, index } = req.body;
     const { id } = req.params;
-    const { _id } = req.user;
-    let orderStatus;
-    if (["process", "processing", "procesed", "processed"].includes(Status.toLowerCase())) {
-        orderStatus = "Processing";
-    }
-    if (["dispatch", "dispatched", "send", "parcelled", "order started"].includes(Status.toLowerCase())) {
-        orderStatus = "Dispatched";
-    }
-    if (["cancel", "cancelled", "order cancelled", "order failed", "order cacellation"].includes(Status.toLowerCase())) {
-        orderStatus = "Cancelled";
-    }
-    if (["delivered", "order sucessful", "delevered", "order completed", "order delivered"].includes(Status.toLowerCase())) {
-        orderStatus = "Delivered";
-    }
-    if (["Returned", "returned", "Returned", "return", "retrn"].includes(Status.toLowerCase())) {
-        orderStatus = "Returned";
-    }
+    let orderStatus = Status;
     try {
-        const order = yield Order.findOne({ _id: id, user: _id });
+        const order = yield Order.findOne({ _id: id });
         if (!order) {
             res.status(404).json({ message: "Order not found" });
             return;
