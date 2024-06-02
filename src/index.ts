@@ -4,7 +4,7 @@ import cors, { CorsOptions } from "cors"
 import morgan from "morgan"
 import session from 'express-session'
 import responceTime from "response-time"
-
+import passport from "passport"
 // Handle uncaught Exception
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
@@ -14,7 +14,7 @@ process.on("uncaughtException", (err) => {
 // config env and database connection.
 import 'dotenv/config'
 import "./config/db.js"
-
+import './utils/GoogleAuth.js'
 const app: Application = express();
 
 import ErrorHandler from "./middleware/Error.js"
@@ -37,14 +37,16 @@ app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(session({
-//     resave: false, saveUninitialized: false, secret: process.env.SESSION_KEY as string,
-//     cookie: {
-//         maxAge: 24 * 60 * 60 * 1000,
-//         sameSite: "lax",
-//         secure: false
-//     }
-// }))
+app.use(session({
+    resave: false, saveUninitialized: false, secret: process.env.SESSION_KEY as string,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+        secure: false
+    }
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static('./src/public/images'));
 app.use(morgan('dev'))
 app.use(responceTime())

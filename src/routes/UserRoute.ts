@@ -1,6 +1,6 @@
 import express from "express"
+import passport from "passport"
 import {
-    googleOauthHandler,
     createUser, loginUser, getAllUsers,
     getUser, deleteUser, updateUser,
     blockUser, unblockUser, handleRefreshToken,
@@ -9,7 +9,7 @@ import {
     saveAddress, getUserCart, emptyCart,
     applyCoupon, createOrder, getOrders,
     deleteCartItems, updateOrderStatus,
-    deleteFromWishlist, addToCart,
+    deleteFromWishlist, addToCart, sucessPage, failurePage,
     SendOtpViaSms, verifyOtp, deleteOrder, getAllOrders,
 } from '../controller/userController.js'
 
@@ -18,6 +18,11 @@ import { loginValidator, passwordValidator, registerValidator } from "../middlew
 
 const router = express.Router();
 
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }))
+router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/api/users/failure', successRedirect: '/api/users/success' }))
+
+router.get('/success', sucessPage)
+router.get('/failure', failurePage)
 
 router.post('/register', registerValidator, createUser)
 router.post('/login', loginValidator, loginUser)
@@ -29,7 +34,7 @@ router.post('/admin-login', loginValidator, loginAdmin)
 router.put('/resetpassword/:token', passwordValidator, resetpassword)
 router.put('/password', passwordValidator, authMiddleware, updatePassword)
 router.get('/allusers', getAllUsers)
-router.get('/sessions/oauth/google', googleOauthHandler)
+// router.get('/sessions/oauth/google', googleOauthHandler)
 router.get('/refresh', handleRefreshToken)
 router.get('/logout', logout)
 

@@ -7,34 +7,44 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import axios from "axios";
-import qs from 'qs';
-export const getGoogleOauthTokens = ({ code }) => __awaiter(void 0, void 0, void 0, function* () {
-    const url = "https://oauth2.googleapis.com/token";
-    const values = {
-        code,
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URL,
-        grant_type: "authorization_code",
-    };
+import passport from "passport";
+import User from "../models/UserModel.js";
+import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
+const verifyCallback = (accessToken, refreshToken, profile, done) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
-        const res = yield axios.post(url, qs.stringify(values), {
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        });
-        return res.data;
+        let user = yield User.findOne({ email: (_a = profile === null || profile === void 0 ? void 0 : profile.emails) === null || _a === void 0 ? void 0 : _a[0].value });
+        console.log(user);
+        if (!user) {
+            const email = ((_b = profile === null || profile === void 0 ? void 0 : profile.emails) === null || _b === void 0 ? void 0 : _b[0].value) || '';
+            const firstName = (profile === null || profile === void 0 ? void 0 : profile.given_name) || '';
+            const lastName = (profile === null || profile === void 0 ? void 0 : profile.family_name) || '';
+            const picture = (profile === null || profile === void 0 ? void 0 : profile.picture) || '';
+            user = yield User.create({
+                firstname: firstName,
+                lastname: lastName,
+                email: email,
+                profile: picture,
+                provider: 'google',
+                role: 'user'
+            });
+        }
+        return done(null, user);
     }
     catch (error) {
-        console.log(error, 'failed to Google Oauth');
-        throw error;
+        console.log("error", error);
+        return done(error, null);
     }
 });
-export const getGoogleUser = ({ id_token, access_token }) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const res = yield axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${access_token}`, { headers: { Authorization: `Bearer ${id_token}` } });
-        return res.data;
-    }
-    catch (error) {
-        throw error;
-    }
+const googleStrategyOptions = {
+    clientID: process.env.CLIENT_ID || '',
+    clientSecret: process.env.CLIENT_SECRET || '',
+    callbackURL: process.env.GOOGLE_OAUTH_REDIRECT_URL || '',
+};
+passport.use(new GoogleStrategy(googleStrategyOptions, verifyCallback));
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+passport.deserializeUser((user, done) => {
+    done(null, user);
 });

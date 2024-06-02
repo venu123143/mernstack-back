@@ -2,13 +2,16 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import session from 'express-session';
 import responceTime from "response-time";
+import passport from "passport";
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
     console.log(`shutting down the server for handling uncaught Exception`);
 });
 import 'dotenv/config';
 import "./config/db.js";
+import './utils/GoogleAuth.js';
 const app = express();
 import ErrorHandler from "./middleware/Error.js";
 import UserRouter from './routes/UserRoute.js';
@@ -28,6 +31,16 @@ app.use(cors(options));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(session({
+    resave: false, saveUninitialized: false, secret: process.env.SESSION_KEY,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: "lax",
+        secure: false
+    }
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static('./src/public/images'));
 app.use(morgan('dev'));
 app.use(responceTime());

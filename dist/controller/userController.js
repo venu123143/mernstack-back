@@ -16,7 +16,7 @@ import Product from "../models/ProductModel.js";
 import Cart from "../models/CartModel.js";
 import Order from "../models/OrderModel.js";
 import Coupon from "../models/CouponModel.js";
-import { getGoogleOauthTokens, getGoogleUser } from "../utils/GoogleAuth.js";
+import jwt from "jsonwebtoken";
 import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js';
@@ -535,33 +535,33 @@ export const deleteOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
         throw new FancyError("not able to delete Order", 400);
     }
 }));
-export const googleOauthHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const sucessPage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = req.query.code;
     try {
-        const { id_token, access_token } = yield getGoogleOauthTokens({ code });
-        const googleUser = yield getGoogleUser({ id_token, access_token });
-        if (!googleUser.verified_email) {
-            return res.status(403).send('Google acoount is not verified');
+        if (!req.user) {
+            throw new Error("user not found");
         }
-        const user = yield User.findOneAndUpdate({ email: googleUser.email }, {
-            email: googleUser.email,
-            firstname: googleUser.given_name,
-            lastname: googleUser.family_name,
-            profile: googleUser.picture,
-        }, { upsert: true, new: true });
-        req.session.user = user;
-        req.session.save();
-        const token = yield user.generateAuthToken();
+        let token = jwt.sign({ _id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
         const options = {
             maxAge: 24 * 60 * 60 * 1000,
-            secure: false,
+            secure: true,
             httpOnly: false,
+            sameSite: 'none'
         };
-        res.cookie('loginToken', token, options);
-        res.status(201).redirect(process.env.CLIENT_ORIGIN);
+        res.status(200).cookie('loginToken', token, options)
+            .redirect(process.env.SUCCESS_URL);
     }
     catch (error) {
-        return res.redirect(process.env.CLIENT_ORIGIN);
+        console.log("error", error);
+        return res.redirect(process.env.FAILURE_URL);
+    }
+});
+export const failurePage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        res.status(401).redirect(process.env.FAILURE_URL);
+    }
+    catch (error) {
+        return res.redirect(process.env.FAILURE_URL);
     }
 });
 const sendTextMessage = (mobile, otp) => __awaiter(void 0, void 0, void 0, function* () {
