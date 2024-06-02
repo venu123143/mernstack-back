@@ -59,9 +59,7 @@ import { Strategy as GoogleStrategy, StrategyOptions, VerifyCallback, VerifyFunc
 
 const verifyCallback = async (accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) => {
     try {
-        let user = await User.findOne({ email: profile?.emails?.[0].value })
-        console.log(user);
-        
+        let user = await User.findOne({ email: profile?.emails?.[0].value })        
         if (!user) {
             const email = profile?.emails?.[0].value || '';
             const firstName = profile?.given_name || '';

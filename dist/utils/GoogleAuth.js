@@ -14,7 +14,6 @@ const verifyCallback = (accessToken, refreshToken, profile, done) => __awaiter(v
     var _a, _b;
     try {
         let user = yield User.findOne({ email: (_a = profile === null || profile === void 0 ? void 0 : profile.emails) === null || _a === void 0 ? void 0 : _a[0].value });
-        console.log(user);
         if (!user) {
             const email = ((_b = profile === null || profile === void 0 ? void 0 : profile.emails) === null || _b === void 0 ? void 0 : _b[0].value) || '';
             const firstName = (profile === null || profile === void 0 ? void 0 : profile.given_name) || '';

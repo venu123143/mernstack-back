@@ -536,7 +536,6 @@ export const deleteOrder = asyncHandler((req, res) => __awaiter(void 0, void 0, 
     }
 }));
 export const sucessPage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const code = req.query.code;
     try {
         if (!req.user) {
             throw new Error("user not found");
@@ -545,11 +544,11 @@ export const sucessPage = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const options = {
             maxAge: 24 * 60 * 60 * 1000,
             secure: true,
-            httpOnly: false,
+            httpOnly: true,
             sameSite: 'none'
         };
         res.status(200).cookie('loginToken', token, options)
-            .redirect(process.env.SUCCESS_URL);
+            .redirect(`${process.env.SUCCESS_URL}?user=${encodeURIComponent(JSON.stringify(req.user))}`);
     }
     catch (error) {
         console.log("error", error);

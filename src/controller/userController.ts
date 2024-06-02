@@ -608,8 +608,6 @@ export const deleteOrder = asyncHandler(async (req, res) => {
 
 export const sucessPage = async (req: Request, res: Response) => {
     // GET THE CODE FROM QS
-    const code = req.query.code as string
-
     try {
         if (!req.user) {
             throw new Error("user not found")
@@ -621,12 +619,12 @@ export const sucessPage = async (req: Request, res: Response) => {
         const options: any = {
             maxAge: 24 * 60 * 60 * 1000,
             secure: true,
-            httpOnly: false,
+            httpOnly: true,
             sameSite: 'none'
         }
         //  AND REDIRECT BACK TO CLIENT
         res.status(200).cookie('loginToken', token, options)
-            .redirect(process.env.SUCCESS_URL as string)
+            .redirect(`${process.env.SUCCESS_URL}?user=${encodeURIComponent(JSON.stringify(req.user))}`)
     } catch (error) {
         console.log("error", error);
 
