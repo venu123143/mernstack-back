@@ -9,10 +9,23 @@ const __dirname = dirname(__filename);
 import sharp from "sharp"
 import path from "path"
 import FancyError from '../utils/FancyError.js';
+console.log(path.join(__dirname, '../public/images'))
+
+const ensureDirectoryExists = (directory: string) => {
+    if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, { recursive: true });
+    }
+};
+
+// Path to the destination directory
+const destinationDirectory = path.join(__dirname, '../../src/public/images');
+
+// Ensure the destination directory exists
+ensureDirectoryExists(destinationDirectory);
 
 const multerStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, '../public/images'))
+        cb(null, destinationDirectory)
     },
     filename: function (req, file, cb) {
         const uniqueSufix = Date.now() + '-' + Math.round(Math.random() * 1E9);

@@ -9,7 +9,7 @@ import {
     deleteProduct, addToWishlist,
     rating, uploadImages, deleteImages,
     createCheckoutSession, createRaziropayOrder,
-    uploadFilesToS3,
+    uploadFilesToS3, uploadCkImage,
     deleteReview,
     getOrderById
 } from "../controller/productController.js";
@@ -18,12 +18,11 @@ import {
 const router = express.Router();
 
 
-router.post('/', authMiddleware, isAdmin, uploadPhoto.array('images', 10), createProduct)
+router.post('/', authMiddleware, isAdmin, createProduct)
 router.post('/create-checkout-session', createCheckoutSession)
 router.post('/create-raziropay-session', createRaziropayOrder)
-router.put('/upload/:id', authMiddleware, isAdmin,
-    uploadPhoto.array('images', 10),
-    productImgResize, uploadImages)
+router.post('/upload', authMiddleware, isAdmin, uploadPhoto.array('images', 10), uploadImages)
+router.post('/uploadCkImage', uploadPhoto.single('upload'), uploadCkImage)
 router.post('/upload-to-s3', uploadPhoto.array('images', 10), uploadFilesToS3)
 router.get('/:id', getProduct);
 router.put('/wishlist', authMiddleware, addToWishlist);

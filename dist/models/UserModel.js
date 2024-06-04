@@ -28,15 +28,17 @@ const userSchema = new mongoose.Schema({
     },
     mobile: {
         type: String,
-        required: true,
         unique: true,
     },
     password: {
         type: String,
-        required: true,
     },
     profile: {
         type: String,
+    },
+    provider: {
+        type: String,
+        default: "userRegistration"
     },
     role: {
         type: String,

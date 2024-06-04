@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
 import { validationResult } from "express-validator"
-import session from 'express-session'
+import session, { CookieOptions } from 'express-session'
 import uniqueId from "uniqid"
 // import { GET_ASYNC, SET_ASYNC } from "../utils/processes/services.js"
 import User, { IUser } from "../models/UserModel.js"
@@ -11,8 +11,8 @@ import Product, { IProduct } from "../models/ProductModel.js";
 import Cart, { ICart, ICartItem } from "../models/CartModel.js";
 import Order from "../models/OrderModel.js";
 import Coupon from "../models/CouponModel.js";
-
-import { getGoogleOauthTokens, getGoogleUser } from "../utils/GoogleAuth.js";
+import jwt from "jsonwebtoken"
+// import { getGoogleOauthTokens, getGoogleUser } from "../utils/GoogleAuth.js";
 import FancyError from "../utils/FancyError.js";
 import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js'
@@ -38,7 +38,7 @@ export const createUser = asyncHandler(async (req, res): Promise<any> => {
     if (!errors.isEmpty()) {
         return res.status(400).json(errors)
     }
-    const findUser = await User.findOne({ email })
+    const findUser = await User.findOne({ email, mobile: mobile })
     if (!findUser) {
         // creating new user
         const newUser = await User.create(req.body);
@@ -565,27 +565,11 @@ export const getAllOrders = asyncHandler(async (req, res) => {
 export const updateOrderStatus = asyncHandler(async (req, res) => {
     const { Status, index } = req.body
     const { id } = req.params
-    const { _id } = req.user as IUser
 
-    let orderStatus;
-    if (["process", "processing", "procesed", "processed"].includes(Status.toLowerCase())) {
-        orderStatus = "Processing";
-    }
-    if (["dispatch", "dispatched", "send", "parcelled", "order started"].includes(Status.toLowerCase())) {
-        orderStatus = "Dispatched";
-    }
-    if (["cancel", "cancelled", "order cancelled", "order failed", "order cacellation"].includes(Status.toLowerCase())) {
-        orderStatus = "Cancelled";
-    }
-    if (["delivered", "order sucessful", "delevered", "order completed", "order delivered"].includes(Status.toLowerCase())) {
-        orderStatus = "Delivered";
-    }
-    if (["Returned", "returned", "Returned", "return", "retrn"].includes(Status.toLowerCase())) {
-        orderStatus = "Returned";
-    }
+    let orderStatus = Status as string;
 
     try {
-        const order = await Order.findOne({ _id: id, user: _id });
+        const order = await Order.findOne({ _id: id });
         if (!order) {
             res.status(404).json({ message: "Order not found" });
             return
@@ -625,46 +609,38 @@ export const deleteOrder = asyncHandler(async (req, res) => {
     }
 })
 
-export const googleOauthHandler = async (req: Request, res: Response) => {
+
+export const sucessPage = async (req: Request, res: Response) => {
     // GET THE CODE FROM QS
-    const code = req.query.code as string
-
     try {
-        // GET THE ID AND ACCESSTOKE WITH THE CODE
-        const { id_token, access_token } = await getGoogleOauthTokens({ code })
-        const googleUser = await getGoogleUser({ id_token, access_token })
-        // jwt.decode(id_token)
-        if (!googleUser.verified_email) {
-            return res.status(403).send('Google acoount is not verified')
+        if (!req.user) {
+            throw new Error("user not found")
         }
-        // GET THE USER WITH TOKENS and UPSERT THE USER
-        const user = await User.findOneAndUpdate({ email: googleUser.email },
-            {
-                email: googleUser.email,
-                firstname: googleUser.given_name,
-                lastname: googleUser.family_name,
-                profile: googleUser.picture,
-            }, { upsert: true, new: true })
-
-        // CREATE SESSION
-        req.session.user = user as IUser
-        req.session.save();
 
         // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
-        const token = await user.generateAuthToken()
-        const options = {
+        let token = jwt.sign({ _id: req.user._id }, process.env.SECRET_KEY as jwt.Secret, { expiresIn: "1d" });
+
+        const options: any = {
             maxAge: 24 * 60 * 60 * 1000,
-            secure: false,
-            httpOnly: false,
+            secure: true,
+            httpOnly: true,
+            sameSite: 'none'
         }
-        res.cookie('loginToken', token, options)
-
         //  AND REDIRECT BACK TO CLIENT
-        res.status(201).redirect(process.env.CLIENT_ORIGIN as string)
-
-
+        res.status(200).cookie('loginToken', token, options)
+            .redirect(`${process.env.SUCCESS_URL}?user=${encodeURIComponent(JSON.stringify(req.user))}`)
     } catch (error) {
-        return res.redirect(process.env.CLIENT_ORIGIN as string)
+        console.log("error", error);
+
+        return res.redirect(process.env.FAILURE_URL as string)
+    }
+}
+export const failurePage = async (req: Request, res: Response) => {
+    try {
+        //  AND REDIRECT BACK TO CLIENT
+        res.status(401).redirect(process.env.FAILURE_URL as string)
+    } catch (error) {
+        return res.redirect(process.env.FAILURE_URL as string)
     }
 }
 

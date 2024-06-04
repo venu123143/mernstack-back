@@ -8,9 +8,10 @@ export interface IUser extends Document {
   firstname: string;
   lastname: string;
   email: string;
-  phone: string;
+  mobile?: string;
   profile: string;
-  password: string;
+  provider: string;
+  password?: string;
   role: string;
   isBlocked: boolean;
   cart?: Schema.Types.ObjectId[];
@@ -47,15 +48,17 @@ const userSchema: Schema = new mongoose.Schema(
     },
     mobile: {
       type: String,
-      required: true,
       unique: true,
     },
     password: {
       type: String,
-      required: true,
     },
     profile: {
       type: String,
+    },
+    provider: {
+      type: String,
+      default: "userRegistration"
     },
     role: {
       type: String,

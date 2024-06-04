@@ -4,12 +4,14 @@ import cors from "cors";
 import morgan from "morgan";
 import session from 'express-session';
 import responceTime from "response-time";
+import passport from "passport";
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);
     console.log(`shutting down the server for handling uncaught Exception`);
 });
 import 'dotenv/config';
 import "./config/db.js";
+import './utils/GoogleAuth.js';
 const app = express();
 import ErrorHandler from "./middleware/Error.js";
 import UserRouter from './routes/UserRoute.js';
@@ -37,7 +39,9 @@ app.use(session({
         secure: false
     }
 }));
-app.use(express.static('./dist/public/images'));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.static('./src/public/images'));
 app.use(morgan('dev'));
 app.use(responceTime());
 app.get('/', (req, res) => {
