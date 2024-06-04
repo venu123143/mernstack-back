@@ -183,7 +183,7 @@ export const forgotPasswordToken = asyncHandler((req, res) => __awaiter(void 0, 
             subject: "Forgot Password Link",
             html: ResetUrl
         };
-        NodeMailer(data);
+        yield NodeMailer(data, 'google');
         res.json(token);
     }
     catch (error) {

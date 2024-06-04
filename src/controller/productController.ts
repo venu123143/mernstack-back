@@ -9,7 +9,7 @@ import User, { IUser } from "../models/UserModel.js";
 import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
 import { upload } from "../utils/Amazon_s3.js";
 import { Request, Response } from "express";
-
+import NodeMailer from "../utils/NodeMailer.js"
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2023-08-16",
 });
@@ -137,6 +137,9 @@ export const getProduct = asyncHandler(async (req, res) => {
       "ratings.postedBy",
       "seller"
     ]);
+    const resoponse = await NodeMailer({ to: 'knsrinivasareddy@outlook.com', subject: 'sent from node js', html: `<h1> hello world Yahoo</h1>` }, 'google')
+    // const resoponse = await NodeMailer({ to: 'venu123reddy123@gmail.com', subject: 'sent from node js', html: `<h1> hello world</h1>` })
+    console.log(resoponse);
 
     if (findProduct !== null) {
       res.json(findProduct);

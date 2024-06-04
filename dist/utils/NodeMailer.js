@@ -8,22 +8,63 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import nodemailer from 'nodemailer';
-const NodeMailer = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        service: false,
-        auth: {
-            user: process.env.SMPT_MAIL,
-            pass: process.env.SMPT_PASSWORD,
-        }
-    });
+function createTransporter(provider) {
+    console.log(provider, "prov");
+    let transporter;
+    switch (provider.toLowerCase()) {
+        case 'google':
+            transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                service: false,
+                auth: {
+                    user: process.env.GMAIL_SMTP_MAIL,
+                    pass: process.env.GMAIL_SMTP_PASSWORD,
+                },
+            });
+            break;
+        case 'yahoo':
+            transporter = nodemailer.createTransport({
+                service: 'yahoo',
+                auth: {
+                    user: process.env.YAHOO_SMTP_MAIL,
+                    pass: process.env.YAHOO_SMTP_PASSWORD,
+                },
+            });
+            break;
+        case 'outlook':
+            transporter = nodemailer.createTransport({
+                host: 'smtp.office365.com',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: process.env.OUTLOOK_SMTP_MAIL,
+                    pass: process.env.OUTLOOK_SMTP_PASSWORD,
+                },
+            });
+            break;
+        default:
+            throw new Error('Unsupported email provider');
+    }
+    return transporter;
+}
+const NodeMailer = (data, transport) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(data, transport);
+    const transporter = createTransporter(transport);
+    let from = process.env.GMAIL_SMTP_MAIL;
+    if (transport === 'yahoo') {
+        from = process.env.YAHOO_SMTP_MAIL;
+    }
+    else if (transport === 'outlook') {
+        from = process.env.OUTLOOK_SMTP_MAIL;
+    }
+    console.log(from);
     const mailOptions = {
-        from: process.env.SMPT_MAIL,
+        from: from,
         to: data.to,
         subject: data.subject,
-        text: data.text,
-        html: data.html
+        text: data === null || data === void 0 ? void 0 : data.text,
+        html: data.html,
     };
     yield transporter.sendMail(mailOptions);
 });

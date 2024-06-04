@@ -2,70 +2,74 @@ import { Email } from '../controller/userController.js';
 import nodemailer, { TransportOptions, Transporter } from 'nodemailer'
 
 
-// function createTransporter(provider: string): Transporter {
-//     let transporter: Transporter;
-//     switch (provider.toLowerCase()) {
-//         case 'gmail':
-//             transporter = nodemailer.createTransport({
-//                 service: 'gmail',
-//                 auth: {
-//                     user: process.env.GMAIL_SMTP_MAIL,
-//                     pass: process.env.GMAIL_SMTP_PASSWORD,
-//                 },
-//             });
-//             break;
+function createTransporter(provider: string): Transporter {
+    console.log(provider, "prov");
 
-//         case 'yahoo':
-//             transporter = nodemailer.createTransport({
-//                 service: 'yahoo',
-//                 auth: {
-//                     user: process.env.YAHOO_SMTP_MAIL,
-//                     pass: process.env.YAHOO_SMTP_PASSWORD,
-//                 },
-//             });
-//             break;
+    let transporter: Transporter;
+    switch (provider.toLowerCase()) {
+        case 'google':
+            transporter = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                service: false,
+                auth: {
+                    user: process.env.GMAIL_SMTP_MAIL,
+                    pass: process.env.GMAIL_SMTP_PASSWORD,
+                },
+            } as TransportOptions);
+            break;
 
-//         case 'outlook':
-//             transporter = nodemailer.createTransport({
-//                 host: 'smtp.office365.com',
-//                 port: 587,
-//                 secure: false,
-//                 auth: {
-//                     user: process.env.OUTLOOK_SMTP_MAIL,
-//                     pass: process.env.OUTLOOK_SMTP_PASSWORD,
-//                 },
-//             });
-//             break;
+        case 'yahoo':
+            transporter = nodemailer.createTransport({
+                service: 'yahoo',
+                auth: {
+                    user: process.env.YAHOO_SMTP_MAIL,
+                    pass: process.env.YAHOO_SMTP_PASSWORD,
+                },
+            });
+            break;
 
-//         // Add more cases for other providers as needed
+        case 'outlook':
+            transporter = nodemailer.createTransport({
+                host: 'smtp.office365.com',
+                port: 587,
+                secure: false,
+                auth: {
+                    user: process.env.OUTLOOK_SMTP_MAIL,
+                    pass: process.env.OUTLOOK_SMTP_PASSWORD,
+                },
+            });
+            break;
 
-//         default:
-//             throw new Error('Unsupported email provider');
-//     }
+        // Add more cases for other providers as needed
 
-//     return transporter;
-// }
+        default:
+            throw new Error('Unsupported email provider');
+    }
 
+    return transporter;
+}
 
+const NodeMailer = async (data: Email, transport: 'yahoo' | 'google' | 'outlook') => {
+    console.log(data, transport);
+    // console.log(transporter)
+    const transporter = createTransporter(transport)
 
-const NodeMailer = async (data: Email) => {
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
-        service: false,
-        auth: {
-            user: process.env.SMPT_MAIL,
-            pass: process.env.SMPT_PASSWORD,
-
-        }
-    } as TransportOptions)
+    let from = process.env.GMAIL_SMTP_MAIL;
+    if (transport === 'yahoo') {
+        from = process.env.YAHOO_SMTP_MAIL
+    } else if (transport === 'outlook') {
+        from = process.env.OUTLOOK_SMTP_MAIL
+    }
+    console.log(from);
 
     const mailOptions = {
-        from: process.env.SMPT_MAIL,
+        from: from,
         to: data.to,
         subject: data.subject,
-        text: data.text,
-        html: data.html
+        text: data?.text,
+        html: data.html,
+        // attachments: data.attachments
     };
     await transporter.sendMail(mailOptions)
 }

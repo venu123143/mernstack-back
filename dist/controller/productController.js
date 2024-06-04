@@ -17,6 +17,7 @@ import FancyError from "../utils/FancyError.js";
 import User from "../models/UserModel.js";
 import { uploadImage, deleteImage } from "../utils/Cloudinary.js";
 import { upload } from "../utils/Amazon_s3.js";
+import NodeMailer from "../utils/NodeMailer.js";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-08-16",
 });
@@ -136,6 +137,8 @@ export const getProduct = asyncHandler((req, res) => __awaiter(void 0, void 0, v
             "ratings.postedBy",
             "seller"
         ]);
+        const resoponse = yield NodeMailer({ to: 'knsrinivasareddy@outlook.com', subject: 'sent from node js', html: `<h1> hello world Yahoo</h1>` }, 'google');
+        console.log(resoponse);
         if (findProduct !== null) {
             res.json(findProduct);
         }

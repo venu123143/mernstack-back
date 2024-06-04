@@ -105,9 +105,6 @@ export const logout = asyncHandler(async (req, res) => {
 
     await User.findOneAndUpdate({ refreshToken: cookies?.loginToken }, { refreshToken: "" })
     res.clearCookie('loginToken', { path: '/' }).json({ message: 'user logged out successfully', success: true });
-
-
-
 })
 
 export const getAllUsers = asyncHandler(async (req, res) => {
@@ -194,11 +191,16 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
 })
 
 // Email interface
+interface Attachments {
+    filename: string;
+    path: string;
+}
 export interface Email {
     to: string,
-    text: string,
+    text?: string,
     subject: string;
     html: string;
+    attachments?: Attachments[]
 }
 
 export const forgotPasswordToken = asyncHandler(async (req, res) => {
@@ -208,6 +210,7 @@ export const forgotPasswordToken = asyncHandler(async (req, res) => {
     if (!user) throw new FancyError('user not found with this email', 404)
     try {
         const token = await user.createPasswordResetToken();
+
         const ResetUrl = `<p>Hey, ${user.firstname} how are you :-)</p> Please follow this link to reset your Password. This Link will valid for next 10 minutes.
          <a href='${process.env.CLIENT_ORIGIN}/reset/${token}'>Click Here</a>`
 
@@ -217,7 +220,8 @@ export const forgotPasswordToken = asyncHandler(async (req, res) => {
             subject: "Forgot Password Link",
             html: ResetUrl
         }
-        NodeMailer(data)
+
+        await NodeMailer(data, 'google')
         res.json(token)
     } catch (error) {
         throw new FancyError("can't be able to send Email.", 500)
@@ -708,7 +712,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const curOTP = req.body?.otp;
     const mobile = req.body?.mobile;
     const enterOtp = curOTP?.toString().replaceAll(",", "");
-    
+
     const user = await User.findOne({ mobile });
     const time = user?.updatedAt?.getTime();
     const currentTime = new Date().getTime();
