@@ -37,7 +37,8 @@ declare module 'express-session' {
 export const createUser = asyncHandler(async (req, res): Promise<any> => {
     const { firstname, lastname, email, password, mobile } = req.body;
 
-    if (!firstname || !lastname || !email || !password || !mobile) {
+    if ((!firstname || !lastname || !email || !password || !mobile)
+        && (firstname !== '' || lastname !== '' || email !== '' || password !== '' || mobile !== '')) {
         throw new FancyError('All fields are important..!', 403)
     }
     const errors = validationResult(req)
@@ -65,6 +66,7 @@ export const loginUser = asyncHandler(async (req, res): Promise<any> => {
         return res.status(400).json(errors)
     }
     if (findUser && findUser.role !== 'user') throw new FancyError("you are not an user..!", 400)
+    if (findUser && findUser.isBlocked === true) throw new FancyError("you are blocked, please contact administrator to unblock.", 400)
     if (findUser && await findUser.isPasswordMatched(password)) {
         return jwtToken(findUser, 201, res)
     } else {
@@ -78,7 +80,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
 
     if (findAdmin && findAdmin.role !== 'admin') throw new FancyError("you are not an admin..!", 400)
     // console.log(findAdmin && await findAdmin.isPasswordMatched(password));
-
+    if (findAdmin && findAdmin.isBlocked === true) throw new FancyError("you are blocked, please contact administrator to unblock.", 400)
     if (findAdmin && await findAdmin.isPasswordMatched(password)) {
         return jwtToken(findAdmin, 201, res)
     } else {
@@ -218,7 +220,7 @@ export const forgotPasswordToken = asyncHandler(async (req, res) => {
         const token = await user.createPasswordResetToken();
         const url = `${process.env.CLIENT_ORIGIN}/reset/${token}`;
 
-        const __filename = fileURLToPath(import.meta.url);
+        // const __filename = fileURLToPath(import.meta.url);
         const __dirname = dirname(__filename);
 
         const tempPath = path.join(__dirname, '../../src/templates/ForgotPassword.ejs')
@@ -232,8 +234,14 @@ export const forgotPasswordToken = asyncHandler(async (req, res) => {
             subject: "Forgot Password Link",
             html: compiledTemplate({ name: user.firstname, resetUrl: url })
         }
-
-        await NodeMailer(data, 'google').then(() => {
+        let transport = 'google' as 'google' | 'yahoo' | 'outlook'
+        if (email.includes('@yahoo')) {
+            transport = 'yahoo'
+        }
+        if (email.includes('@outlook')) {
+            transport = 'outlook'
+        }
+        await NodeMailer(data, transport).then(() => {
             res.json(token)
         }).catch((err) => {
             res.status(401).json({ message: "unable to send email" })
@@ -250,8 +258,9 @@ export const resetpassword = asyncHandler(async (req, res) => {
     const { password } = req.body
     const { token } = req.params
     if (!password) {
-        throw new FancyError("Must Enter some password..!", 404)
+        throw new FancyError("Must Enter some strong password..!", 404)
     }
+
     const hashed = crypto.createHash("sha256").update(token).digest('hex')
     const user = await User.findOne({ passwordResetToken: hashed, passwordResetExpires: { $gt: Date.now() } })
     if (!user) throw new FancyError("Token Expired, Try again later", 401)

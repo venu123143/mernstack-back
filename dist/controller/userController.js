@@ -31,7 +31,8 @@ const __dirname = dirname(__filename);
 const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { firstname, lastname, email, password, mobile } = req.body;
-    if (!firstname || !lastname || !email || !password || !mobile) {
+    if ((!firstname || !lastname || !email || !password || !mobile)
+        && (firstname !== '' || lastname !== '' || email !== '' || password !== '' || mobile !== '')) {
         throw new FancyError('All fields are important..!', 403);
     }
     const errors = validationResult(req);
@@ -56,6 +57,8 @@ export const loginUser = asyncHandler((req, res) => __awaiter(void 0, void 0, vo
     }
     if (findUser && findUser.role !== 'user')
         throw new FancyError("you are not an user..!", 400);
+    if (findUser && findUser.isBlocked === true)
+        throw new FancyError("you are blocked, please contact administrator to unblock.", 400);
     if (findUser && (yield findUser.isPasswordMatched(password))) {
         return jwtToken(findUser, 201, res);
     }
@@ -68,6 +71,8 @@ export const loginAdmin = asyncHandler((req, res) => __awaiter(void 0, void 0, v
     const findAdmin = yield User.findOne({ email });
     if (findAdmin && findAdmin.role !== 'admin')
         throw new FancyError("you are not an admin..!", 400);
+    if (findAdmin && findAdmin.isBlocked === true)
+        throw new FancyError("you are blocked, please contact administrator to unblock.", 400);
     if (findAdmin && (yield findAdmin.isPasswordMatched(password))) {
         return jwtToken(findAdmin, 201, res);
     }
@@ -181,7 +186,6 @@ export const forgotPasswordToken = asyncHandler((req, res) => __awaiter(void 0, 
     try {
         const token = yield user.createPasswordResetToken();
         const url = `${process.env.CLIENT_ORIGIN}/reset/${token}`;
-        const __filename = fileURLToPath(import.meta.url);
         const __dirname = dirname(__filename);
         const tempPath = path.join(__dirname, '../../src/templates/ForgotPassword.ejs');
         const template = fs.readFileSync(tempPath, 'utf-8');
@@ -192,7 +196,14 @@ export const forgotPasswordToken = asyncHandler((req, res) => __awaiter(void 0, 
             subject: "Forgot Password Link",
             html: compiledTemplate({ name: user.firstname, resetUrl: url })
         };
-        yield NodeMailer(data, 'google').then(() => {
+        let transport = 'google';
+        if (email.includes('@yahoo')) {
+            transport = 'yahoo';
+        }
+        if (email.includes('@outlook')) {
+            transport = 'outlook';
+        }
+        yield NodeMailer(data, transport).then(() => {
             res.json(token);
         }).catch((err) => {
             res.status(401).json({ message: "unable to send email" });
@@ -207,7 +218,7 @@ export const resetpassword = asyncHandler((req, res) => __awaiter(void 0, void 0
     const { password } = req.body;
     const { token } = req.params;
     if (!password) {
-        throw new FancyError("Must Enter some password..!", 404);
+        throw new FancyError("Must Enter some strong password..!", 404);
     }
     const hashed = crypto.createHash("sha256").update(token).digest('hex');
     const user = yield User.findOne({ passwordResetToken: hashed, passwordResetExpires: { $gt: Date.now() } });
