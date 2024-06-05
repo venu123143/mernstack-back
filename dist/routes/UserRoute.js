@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, unblockUser, handleRefreshToken, logout, updatePassword, forgotPasswordToken, resetpassword, loginAdmin, GetWishlist, saveAddress, getUserCart, emptyCart, applyCoupon, createOrder, getOrders, deleteCartItems, updateOrderStatus, deleteFromWishlist, addToCart, sucessPage, failurePage, SendOtpViaSms, verifyOtp, deleteOrder, getAllOrders, } from '../controller/userController.js';
+import { createUser, loginUser, getAllUsers, getUser, deleteUser, updateUser, blockUser, handleRefreshToken, logout, updatePassword, forgotPasswordToken, resetpassword, loginAdmin, GetWishlist, saveAddress, getUserCart, emptyCart, applyCoupon, createOrder, getOrders, deleteCartItems, updateOrderStatus, deleteFromWishlist, addToCart, sucessPage, failurePage, SendOtpViaSms, verifyOtp, deleteOrder, getAllOrders, } from '../controller/userController.js';
 import { authMiddleware, isAdmin } from '../middleware/authMiddleware.js';
 import { loginValidator, passwordValidator, registerValidator } from "../middleware/ValidateMiddleware.js";
 const router = express.Router();
@@ -35,6 +35,5 @@ router.delete('/:id', authMiddleware, deleteUser);
 router.delete('/wishlist/:id', authMiddleware, deleteFromWishlist);
 router.get('/:id', authMiddleware, isAdmin, getUser);
 router.delete('/empty-cart', authMiddleware, emptyCart);
-router.put('/block-user/:id', authMiddleware, isAdmin, blockUser);
-router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser);
+router.put('/block-unBlock/:id', authMiddleware, isAdmin, blockUser);
 export default router;

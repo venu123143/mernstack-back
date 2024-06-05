@@ -58,8 +58,8 @@ router.delete('/:id', authMiddleware, deleteUser)
 router.delete('/wishlist/:id', authMiddleware, deleteFromWishlist)
 router.get('/:id', authMiddleware, isAdmin, getUser)
 router.delete('/empty-cart', authMiddleware, emptyCart)
-router.put('/block-user/:id', authMiddleware, isAdmin, blockUser)
-router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser)
+router.put('/block-unBlock/:id', authMiddleware, isAdmin, blockUser)
+// router.put('/unblock-user/:id', authMiddleware, isAdmin, unblockUser)
 
 
 export default router

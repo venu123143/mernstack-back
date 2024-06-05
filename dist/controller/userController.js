@@ -146,8 +146,18 @@ export const blockUser = asyncHandler((req, res, next) => __awaiter(void 0, void
     const { id } = req.params;
     validateMogodbId(req, res, next);
     try {
-        const block = yield User.findByIdAndUpdate(id, { isBlocked: true }, { new: true });
-        res.json({ message: "user Blocked sucessfully..!" });
+        const findUser = yield User.findById(id);
+        let message;
+        if (findUser.isBlocked) {
+            findUser.isBlocked = false;
+            message = "user un blocked sucessfully..!";
+        }
+        else {
+            findUser.isBlocked = true;
+            message = "user Blocked sucessfully..!";
+        }
+        findUser.save();
+        res.json({ message, findUser });
     }
     catch (error) {
         throw new FancyError('unable to block user', 403);
