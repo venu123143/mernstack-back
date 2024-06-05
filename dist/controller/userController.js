@@ -574,6 +574,9 @@ export const sucessPage = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (!req.user) {
             throw new Error("user not found");
         }
+        if (req.user.isBlocked) {
+            return res.redirect(`${process.env.FAILURE_URL}?error=you are blocked, please contact administrator`);
+        }
         let token = jwt.sign({ _id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
         const options = {
             maxAge: 24 * 60 * 60 * 1000,
