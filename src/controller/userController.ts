@@ -652,6 +652,9 @@ export const sucessPage = async (req: Request, res: Response) => {
         if (!req.user) {
             throw new Error("user not found")
         }
+        if (req.user.isBlocked) {
+            return res.redirect(`${process.env.FAILURE_URL}?error=you are blocked, please contact administrator`)
+        }
 
         // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
         let token = jwt.sign({ _id: req.user._id }, process.env.SECRET_KEY as jwt.Secret, { expiresIn: "1d" });
