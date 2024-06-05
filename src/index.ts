@@ -5,6 +5,7 @@ import morgan from "morgan"
 import session from 'express-session'
 import responceTime from "response-time"
 import passport from "passport"
+import path from "path"
 // Handle uncaught Exception
 process.on("uncaughtException", (err) => {
     console.log(`Error: ${err.message}`);

@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import nodemailer from 'nodemailer';
 function createTransporter(provider) {
-    console.log(provider, "prov");
     let transporter;
     switch (provider.toLowerCase()) {
         case 'google':
@@ -49,7 +48,6 @@ function createTransporter(provider) {
     return transporter;
 }
 const NodeMailer = (data, transport) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(data, transport);
     const transporter = createTransporter(transport);
     let from = process.env.GMAIL_SMTP_MAIL;
     if (transport === 'yahoo') {
@@ -58,7 +56,6 @@ const NodeMailer = (data, transport) => __awaiter(void 0, void 0, void 0, functi
     else if (transport === 'outlook') {
         from = process.env.OUTLOOK_SMTP_MAIL;
     }
-    console.log(from);
     const mailOptions = {
         from: from,
         to: data.to,

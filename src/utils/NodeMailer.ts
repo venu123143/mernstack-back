@@ -3,8 +3,6 @@ import nodemailer, { TransportOptions, Transporter } from 'nodemailer'
 
 
 function createTransporter(provider: string): Transporter {
-    console.log(provider, "prov");
-
     let transporter: Transporter;
     switch (provider.toLowerCase()) {
         case 'google':
@@ -51,8 +49,6 @@ function createTransporter(provider: string): Transporter {
 }
 
 const NodeMailer = async (data: Email, transport: 'yahoo' | 'google' | 'outlook') => {
-    console.log(data, transport);
-    // console.log(transporter)
     const transporter = createTransporter(transport)
 
     let from = process.env.GMAIL_SMTP_MAIL;
@@ -61,7 +57,6 @@ const NodeMailer = async (data: Email, transport: 'yahoo' | 'google' | 'outlook'
     } else if (transport === 'outlook') {
         from = process.env.OUTLOOK_SMTP_MAIL
     }
-    console.log(from);
 
     const mailOptions = {
         from: from,

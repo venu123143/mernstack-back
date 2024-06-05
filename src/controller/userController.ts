@@ -18,7 +18,13 @@ import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js'
 import NodeMailer from "../utils/NodeMailer.js"
 import { razorpay } from './productController.js';
+import fs from "fs"
+import ejs from "ejs"
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 
 declare module 'express-session' {
@@ -82,7 +88,6 @@ export const loginAdmin = asyncHandler(async (req, res) => {
 // handle refresh token
 export const handleRefreshToken = asyncHandler(async (req, res) => {
     const cookie = await req.cookies
-    console.log(cookie);
     if (!cookie.loginToken) {
         throw new FancyError(' No Refresh Token in cookies', 404)
     }
@@ -202,6 +207,7 @@ export interface Email {
     html: string;
     attachments?: Attachments[]
 }
+// console.log(path.join(__dirname, '../../src/public/images'));
 
 export const forgotPasswordToken = asyncHandler(async (req, res) => {
     const { email } = req.body as IUser
@@ -210,20 +216,32 @@ export const forgotPasswordToken = asyncHandler(async (req, res) => {
     if (!user) throw new FancyError('user not found with this email', 404)
     try {
         const token = await user.createPasswordResetToken();
+        const url = `${process.env.CLIENT_ORIGIN}/reset/${token}`;
 
-        const ResetUrl = `<p>Hey, ${user.firstname} how are you :-)</p> Please follow this link to reset your Password. This Link will valid for next 10 minutes.
-         <a href='${process.env.CLIENT_ORIGIN}/reset/${token}'>Click Here</a>`
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = dirname(__filename);
+
+        const tempPath = path.join(__dirname, '../../src/templates/ForgotPassword.ejs')
+
+        const template = fs.readFileSync(tempPath, 'utf-8')
+        const compiledTemplate = ejs.compile(template);
 
         const data: Email = {
             to: email,
             text: `Hey ${user.firstname}, how are you :-)`,
             subject: "Forgot Password Link",
-            html: ResetUrl
+            html: compiledTemplate({ name: user.firstname, resetUrl: url })
         }
 
-        await NodeMailer(data, 'google')
-        res.json(token)
-    } catch (error) {
+        await NodeMailer(data, 'google').then(() => {
+            res.json(token)
+        }).catch((err) => {
+            res.status(401).json({ message: "unable to send email" })
+        })
+
+    } catch (error: any) {
+        console.log(error.message);
+
         throw new FancyError("can't be able to send Email.", 500)
     }
 })

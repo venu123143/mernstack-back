@@ -22,6 +22,12 @@ import jwtToken from "../utils/jwtToken.js";
 import { validateMogodbId } from '../utils/validateMongodbId.js';
 import NodeMailer from "../utils/NodeMailer.js";
 import { razorpay } from './productController.js';
+import fs from "fs";
+import ejs from "ejs";
+import { fileURLToPath } from 'url';
+import path, { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { firstname, lastname, email, password, mobile } = req.body;
@@ -71,7 +77,6 @@ export const loginAdmin = asyncHandler((req, res) => __awaiter(void 0, void 0, v
 }));
 export const handleRefreshToken = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const cookie = yield req.cookies;
-    console.log(cookie);
     if (!cookie.loginToken) {
         throw new FancyError(' No Refresh Token in cookies', 404);
     }
@@ -175,18 +180,26 @@ export const forgotPasswordToken = asyncHandler((req, res) => __awaiter(void 0, 
         throw new FancyError('user not found with this email', 404);
     try {
         const token = yield user.createPasswordResetToken();
-        const ResetUrl = `<p>Hey, ${user.firstname} how are you :-)</p> Please follow this link to reset your Password. This Link will valid for next 10 minutes.
-         <a href='${process.env.CLIENT_ORIGIN}/reset/${token}'>Click Here</a>`;
+        const url = `${process.env.CLIENT_ORIGIN}/reset/${token}`;
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = dirname(__filename);
+        const tempPath = path.join(__dirname, '../../src/templates/ForgotPassword.ejs');
+        const template = fs.readFileSync(tempPath, 'utf-8');
+        const compiledTemplate = ejs.compile(template);
         const data = {
             to: email,
             text: `Hey ${user.firstname}, how are you :-)`,
             subject: "Forgot Password Link",
-            html: ResetUrl
+            html: compiledTemplate({ name: user.firstname, resetUrl: url })
         };
-        yield NodeMailer(data, 'google');
-        res.json(token);
+        yield NodeMailer(data, 'google').then(() => {
+            res.json(token);
+        }).catch((err) => {
+            res.status(401).json({ message: "unable to send email" });
+        });
     }
     catch (error) {
+        console.log(error.message);
         throw new FancyError("can't be able to send Email.", 500);
     }
 }));
