@@ -655,6 +655,9 @@ export const sucessPage = async (req: Request, res: Response) => {
         if (req.user.isBlocked) {
             return res.redirect(`${process.env.FAILURE_URL}?error=you are blocked, please contact administrator`)
         }
+        if (req.user.role === 'admin') {
+            return res.redirect(`${process.env.FAILURE_URL}?error=you are not an user`)
+        }
 
         // CREATE ACCESS, REFRESH TOKENS AND SETUP COOKIES
         let token = jwt.sign({ _id: req.user._id }, process.env.SECRET_KEY as jwt.Secret, { expiresIn: "1d" });
