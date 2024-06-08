@@ -655,7 +655,9 @@ export const sucessPage = async (req: Request, res: Response) => {
         if (req.user.isBlocked) {
             return res.redirect(`${process.env.FAILURE_URL}?error=you are blocked, please contact administrator`)
         }
-        if (req.user.role === 'admin') {
+        console.log(req.user.role);
+
+        if (req.user.role == 'admin') {
             return res.redirect(`${process.env.FAILURE_URL}?error=you are not an user`)
         }
 
