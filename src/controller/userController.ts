@@ -1,10 +1,8 @@
-import Twilio from 'twilio';
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import crypto from "crypto"
 import { validationResult } from "express-validator"
-import session, { CookieOptions } from 'express-session'
-import uniqueId from "uniqid"
+
 // import { GET_ASYNC, SET_ASYNC } from "../utils/processes/services.js"
 import User, { IUser } from "../models/UserModel.js"
 import Product, { IProduct } from "../models/ProductModel.js";
@@ -25,7 +23,7 @@ import path, { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
+// const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 
 declare module 'express-session' {
     interface Session {
@@ -688,20 +686,20 @@ export const failurePage = async (req: Request, res: Response) => {
     }
 }
 
-const sendTextMessage = async (mobile: string, otp: string) => {
-    try {
-        const msg = await client.messages
-            .create({
-                body: `Your Otp is ${otp} , valid for next 10-min.`,
-                to: `+91${mobile}`,
-                from: '+16562188441', // From a valid Twilio number
-            })
-        return msg
-    } catch (error) {
-        return error
-    }
+// const sendTextMessage = async (mobile: string, otp: string) => {
+//     try {
+//         const msg = await client.messages
+//             .create({
+//                 body: `Your Otp is ${otp} , valid for next 10-min.`,
+//                 to: `+91${mobile}`,
+//                 from: '+16562188441', // From a valid Twilio number
+//             })
+//         return msg
+//     } catch (error) {
+//         return error
+//     }
 
-};
+// };
 export const SendOtpViaSms = async (req: Request, res: Response) => {
     const mobile = req.body?.mobile
     let otp = Math.floor(100000 + Math.random() * 900000).toString();
