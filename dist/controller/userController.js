@@ -7,7 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import Twilio from 'twilio';
 import asyncHandler from "express-async-handler";
 import crypto from "crypto";
 import { validationResult } from "express-validator";
@@ -28,7 +27,6 @@ import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const client = Twilio(process.env.ACCOUNT_SID, process.env.ACCOUNT_TOKEN);
 export const createUser = asyncHandler((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { firstname, lastname, email, password, mobile } = req.body;
     if ((!firstname || !lastname || !email || !password || !mobile)
@@ -577,6 +575,10 @@ export const sucessPage = (req, res) => __awaiter(void 0, void 0, void 0, functi
         if (req.user.isBlocked) {
             return res.redirect(`${process.env.FAILURE_URL}?error=you are blocked, please contact administrator`);
         }
+        console.log(req.user.role);
+        if (req.user.role == 'admin') {
+            return res.redirect(`${process.env.FAILURE_URL}?error=you are not an user`);
+        }
         let token = jwt.sign({ _id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
         const options = {
             maxAge: 24 * 60 * 60 * 1000,
@@ -598,20 +600,6 @@ export const failurePage = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
     catch (error) {
         return res.redirect(process.env.FAILURE_URL);
-    }
-});
-const sendTextMessage = (mobile, otp) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const msg = yield client.messages
-            .create({
-            body: `Your Otp is ${otp} , valid for next 10-min.`,
-            to: `+91${mobile}`,
-            from: '+16562188441',
-        });
-        return msg;
-    }
-    catch (error) {
-        return error;
     }
 });
 export const SendOtpViaSms = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
