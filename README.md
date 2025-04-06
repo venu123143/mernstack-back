@@ -67,5 +67,43 @@ cd amazon-clone
 # Install dependencies
 npm install
 
+# Create a `.env` file in the root directory and add the following:
+
+# Razorpay Configuration
+RAZORPAY_TEST=
+RAZORPAY_SECRET=
+
+# MongoDB Connection
+DATABASE=
+
+# JWT and Session
+SECRET_KEY=SNFSHFNASDFASFUHFUHSADFSAFHOASNFHASHFOASFOASFO685S5F5SDFDSDF
+SESSION_KEY=SLFNSJKFHSWRUHWEJK4924OU24897JFJ894J5489J2NJKL24Y3G497D89FYFJB872
+
+# Cloudinary Configuration
+CLOUD_NAME=
+API_KEY=
+API_SECRET=
+
+# Email (Gmail SMTP)
+BACKEND_HOST=http://localhost:5000
+GMAIL_SMTP_MAIL=venugopalreddy9493@gmail.com
+GMAIL_SMTP_PASSWORD=
+
+# Google Login (OAuth)
+CLIENT_ID=998467465997.example.apps.googleusercontent.com
+CLIENT_SECRET=
+GOOGLE_OAUTH_REDIRECT_URL=http://localhost:5000/api/users/google/callback
+SUCCESS_URL=http://localhost:5173
+FAILURE_URL=http://localhost:5173/login
+
+# Twilio OTP
+ACCOUNT_SID=
+ACCOUNT_TOKEN=
+
+# CORS
+CLIENT_ORIGIN=http://localhost:5173
+
+
 # Start TypeScript compiler and server
 npm run start
