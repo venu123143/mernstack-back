@@ -31,7 +31,7 @@ import EnquiryRouter from "./routes/EnqRoute.js"
 
 // cors, json and cookie-parser
 const options: CorsOptions = {
-    origin: ['https://amazonadmin-app.netlify.app', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
+    origin: ['https://amazonadmin-app.netlify.app', 'https://onlinestore.nerchuko.in', 'https://amazon-clone-wtj7.onrender.com', 'http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
 }
 app.use(cors(options));
