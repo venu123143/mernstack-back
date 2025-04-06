@@ -34,26 +34,57 @@ declare module 'express-session' {
 }
 
 // register
-export const createUser = asyncHandler(async (req, res): Promise<any> => {
+export const createUser = asyncHandler(async (req: Request, res: Response): Promise<any> => {
     const { firstname, lastname, email, password, mobile } = req.body;
 
-    if ((!firstname || !lastname || !email || !password || !mobile)
-        && (firstname !== '' || lastname !== '' || email !== '' || password !== '' || mobile !== '')) {
-        throw new FancyError('All fields are important..!', 403)
+    // Check if fields are missing or empty strings
+    const requiredFields = { firstname, lastname, email, password, mobile };
+    const missingFields = Object.entries(requiredFields).filter(([_, val]) => !val || val === "");
+    if (missingFields.length > 0) {
+        throw new FancyError(`Missing or empty fields: ${missingFields.map(([key]) => key).join(", ")}`, 400);
     }
-    const errors = validationResult(req)
+
+    // Validate using express-validator (you should have middleware for it)
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json(errors)
+        return res.status(400).json({ errors: errors.array() });
     }
-    const findUser = await User.findOne({ email, mobile: mobile })
-    if (!findUser) {
-        // creating new user
-        const newUser = await User.create(req.body);
-        res.json(newUser)
-    } else {
-        throw new FancyError('user already exists', 403)
+
+    // Check for existing user by email or mobile
+    const existingUser = await User.findOne({
+        $or: [{ email: email.toLowerCase() }, { mobile }]
+    });
+
+    if (existingUser) {
+        throw new FancyError("User already exists with given email or mobile", 409);
     }
-})
+
+    // Create the new user (password will be hashed in pre-save hook)
+    const newUser = new User({
+        firstname,
+        lastname,
+        email: email.toLowerCase(),
+        password,
+        mobile,
+        provider: "userRegistration"
+    });
+
+    await newUser.save();
+
+
+    res.status(201).json({
+        message: "User created successfully",
+        user: {
+            _id: newUser._id,
+            firstname: newUser.firstname,
+            lastname: newUser.lastname,
+            email: newUser.email,
+            mobile: newUser.mobile,
+            role: newUser.role,
+            createdAt: newUser.createdAt,
+        },
+    });
+});
 
 // User login
 export const loginUser = asyncHandler(async (req, res): Promise<any> => {

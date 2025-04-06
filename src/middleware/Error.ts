@@ -1,6 +1,6 @@
 import { constants } from "./constants.js"
 import { Request, Response, NextFunction } from "express"
-import  FancyError  from "../utils/FancyError.js"
+import FancyError from "../utils/FancyError.js"
 
 const ErrorHandler = (err: FancyError, req: Request, res: Response, next: NextFunction) => {
     err.statusCode = err.statusCode || 500
@@ -46,9 +46,22 @@ const ErrorHandler = (err: FancyError, req: Request, res: Response, next: NextFu
                 statusCode: err.statusCode
             })
             break;
+        case constants.CONFLICT_ERROR:
+            res.status(err.statusCode).json({
+                title: "CONFLICT_ERROR",
+                message: err.message,
+                statckTrace: err.stack,
+                statusCode: err.statusCode
+            })
+            break;
 
         default:
-            console.log("no error or unknown error.")
+            res.status(err.statusCode).json({
+                title: "GATEWAY ERROR",
+                message: err.message,
+                statckTrace: err.stack,
+                statusCode: err.statusCode
+            })
             break;
     }
 }

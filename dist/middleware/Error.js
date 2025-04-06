@@ -43,8 +43,21 @@ const ErrorHandler = (err, req, res, next) => {
                 statusCode: err.statusCode
             });
             break;
+        case constants.CONFLICT_ERROR:
+            res.status(err.statusCode).json({
+                title: "CONFLICT_ERROR",
+                message: err.message,
+                statckTrace: err.stack,
+                statusCode: err.statusCode
+            });
+            break;
         default:
-            console.log("no error or unknown error.");
+            res.status(err.statusCode).json({
+                title: "GATEWAY ERROR",
+                message: err.message,
+                statckTrace: err.stack,
+                statusCode: err.statusCode
+            });
             break;
     }
 };

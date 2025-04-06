@@ -2,7 +2,8 @@ export interface Constants {
     VALIDATION_ERROR: number,
     UNAUTHORIZED_ERROR: number,
     FORBIDDEN: number,
-    NOT_FOUND: number,
+    NOT_FOUND: number, 
+    CONFLICT_ERROR: number, 
     SERVER_ERROR: number
 }
 export const constants: Constants = {
@@ -10,5 +11,7 @@ export const constants: Constants = {
     UNAUTHORIZED_ERROR: 401,
     FORBIDDEN: 403,
     NOT_FOUND: 404,
-    SERVER_ERROR: 500
+    CONFLICT_ERROR: 409,
+    SERVER_ERROR: 500,
+
 }
